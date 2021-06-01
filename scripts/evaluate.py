@@ -1,9 +1,6 @@
 from argparse import ArgumentParser
 import json
-import urllib.request
-from web3_input_decoder import decode_constructor, decode_function
 import pandas as pd
-import sys
 
 def load_tx_history(file):
     df = pd.read_csv(file, sep=";") 
@@ -26,10 +23,9 @@ def main(args):
         else:
             tx_method_types[input_decoded["method"]] = 1
 
-        
+    liqidation_rate_overall = tx_method_types["liquidationCall"] / tx_method_types["borrow"]
 
-
-
+    results['liqidation_rate_overall'] = liqidation_rate_overall
     results['tx_method_types'] = tx_method_types
 
     with open(output_file, 'w') as fp:
