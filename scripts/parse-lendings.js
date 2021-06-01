@@ -9,7 +9,7 @@ const decoder = new InputDataDecoder("../data/raw/abi.json");
 const data = []
 count = 0;
 
-fs.createReadStream('../data/raw/tx-history-short.csv')
+fs.createReadStream('../data/raw/tx-history.csv')
   .pipe(csv())
   .on('data', (row) => {
     newRow = {...row}
@@ -18,7 +18,7 @@ fs.createReadStream('../data/raw/tx-history-short.csv')
     data.push(row)
     
     count++
-    //if(count % 1000 === 0) console.log(count);
+    if(count % 1000 === 0) console.log(count);
   })
   .on('end', () => {
     console.log('CSV file successfully processed');
@@ -28,9 +28,14 @@ fs.createReadStream('../data/raw/tx-history-short.csv')
       fieldDelimiter: ';',
       header: [
         {id: 'timestamp', title: 'timestamp'},
+        {id: 'blockNumber', title: 'blockNumber'},
         {id: 'hash', title: 'hash'},
+        {id: 'from', title: 'from'},
+        {id: 'to', title: 'to'},
         {id: 'input', title: 'input'},
         {id: 'input_decoded', title: 'input_decoded'},
+        {id: 'isError', title: 'isError'},
+        {id: 'txreceipt_status', title: 'txreceipt_status'},
       ]
     });
 
