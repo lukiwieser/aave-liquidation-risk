@@ -11,13 +11,29 @@ def load_tx_history(file):
 
 def main(args):
     txhistory_file = args.txhistory
+    output_file = args.output
+    results = dict()
+
 
     tx_history = load_tx_history(txhistory_file)
-    print(str(len(tx_history)))
 
+    tx_method_types = dict()
     for index, row in tx_history.iterrows():
         input_decoded = json.loads(row['input_decoded'])
-        print(input_decoded["method"])
+
+        if input_decoded["method"] in tx_method_types:
+            tx_method_types[input_decoded["method"]] += 1
+        else:
+            tx_method_types[input_decoded["method"]] = 1
+
+        
+
+
+
+    results['tx_method_types'] = tx_method_types
+
+    with open(output_file, 'w') as fp:
+        json.dump(results, fp, indent=4)
 
 if __name__ == '__main__':
 
@@ -27,3 +43,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
