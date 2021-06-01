@@ -1,0 +1,24 @@
+{
+  "name": "aave-liquidation-analysis",
+  "version": "1.0.0",
+  "description": "This project aims to analyze risks associated with borrowing assets on the [AAVE protocol](https://aave.com).\r Due to the protocols nature, there is always a risk of one’s collateral to be liquidated.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukiwieser/aave-liquidation-analysis.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lukiwieser/aave-liquidation-analysis/issues"
+  },
+  "homepage": "https://github.com/lukiwieser/aave-liquidation-analysis#readme",
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "ethereum-input-data-decoder": "^0.3.2"
+  }
+}
