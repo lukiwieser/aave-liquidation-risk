@@ -1,4 +1,4 @@
-# AAVE Liquidation Analysis
+# AAVE Liquidation Risk
 
 This project aims to analyze risks associated with borrowing assets on the [AAVE protocol](https://aave.com).
 Due to the protocols nature, there is always a risk of one’s collateral to be liquidated.
