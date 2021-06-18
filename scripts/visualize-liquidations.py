@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pylab as plt
