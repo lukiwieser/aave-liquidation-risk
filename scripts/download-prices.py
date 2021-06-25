@@ -16,7 +16,33 @@ def save_dataframe(df, out_directory, out_file):
 
 
 def main():
-    asset = "BTC"
+    assets = [
+        "ETH",      #Ethereum
+        "DAI", 	    #DAI
+        "GUSD",     #Gemini Dollar (GUSD)
+        "USDC",     #USD Coin (USDC)
+        "USDT",     #USDT Coin (USDT)
+        "WETH",     #Wrapped ETH (WETH)
+        "BUSD",     #Binance USD (BUSD)
+        "SUSD",     #sUSD
+        "TUSD",     #TrueUSD (TUSD)
+        "AAVE",     #Aave (AAVE)
+        "BAT",      #Basic Attention Token (BAT)
+        "BAL",      #Balancer (BAL)
+        "CRV",      #Curve DAO Token (CRV)
+        "ENJ",      #EnjinCoin (ENJ)
+        "KNC",      #Kyber Network (KNC)
+        "LINK",     #ChainLink (LINK)
+        "MANA",     #Decentraland (MANA)
+        "MKR",      #Maker (MKR)
+        "REN",      #REN
+        "SNX",      #SNX
+        "UNI",      #Uniswap (UNI)
+        "SUSHI",    #xSUSHI (XSUSHI) ?? 			
+        "YFI",      #yearn.finance (YFI)
+        "ZRX",      #0x Coin (ZRX)
+        "RAI"       #RAI
+    ]
     quote = "USD"
     queryParams = parse.urlencode({
         'period_id' : '1DAY',
@@ -25,17 +51,19 @@ def main():
         'apikey' : API_KEY
     })
 
-    url = BASE_URL + "/ohlcv/" + asset + "/" + quote + "/history?" + queryParams
-    r = requests.get(url)
-    d = json.loads(r.text)
+    for i, asset in enumerate(assets):
+        url = BASE_URL + "/ohlcv/" + asset + "/" + quote + "/history?" + queryParams
+        r = requests.get(url)
+        d = json.loads(r.text)
 
-    data = []
-    for item in d:
-        data.append([item["time_period_start"],item["price_open"], item["price_high"], item["price_low"], item["price_close"]])
-    df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close'])
+        data = []
+        for item in d:
+            data.append([item["time_period_start"],item["price_open"], item["price_high"], item["price_low"], item["price_close"]])
+        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close'])
 
-    save_dataframe(df, "../data/raw/price-history", asset + "-" + quote + ".csv")
+        save_dataframe(df, "../data/raw/price-history", asset + "-" + quote + ".csv")
 
+        print(str(i+1) + "/" + str(len(assets)))
     
 if __name__ == '__main__':
     main()
