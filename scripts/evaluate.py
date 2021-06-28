@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import json
 import pandas as pd
 from enum import Enum
+from collections import defaultdict 
 
 def load_tx_history(file):
     df = pd.read_csv(file, sep=";") 
@@ -10,19 +11,8 @@ def load_tx_history(file):
 
 class UserData:
     def __init__(self):
-        self.collateral_timeline = dict()
         self.debt_timeline = dict()
     
-    def add_deposit(self, asset, amount, timestamp):
-        if asset not in self.collateral_timeline:
-            self.collateral_timeline[asset] = []
-        self.collateral_timeline[asset].append(["deposit", amount, str(timestamp)])
-
-    def add_withdraw(self, asset, amount, timestamp):
-        if asset not in self.collateral_timeline:
-            self.collateral_timeline[asset] = []
-        self.collateral_timeline[asset].append(["withdraw", amount, str(timestamp)])
-
     def add_borrow(self, asset, amount, timestamp):
         if asset not in self.debt_timeline:
             self.debt_timeline[asset] = []
@@ -33,14 +23,13 @@ class UserData:
             self.debt_timeline[asset] = []
         self.debt_timeline[asset].append(["repay", amount, str(timestamp)])
 
-    def add_liquidation_victim(self, collateral_asset, debt_asset, debt_to_cover, timestamp):
+    def add_liquidation_victim(self, debt_asset, debt_to_cover, timestamp):
         if debt_asset not in self.debt_timeline:
             self.debt_timeline[debt_asset] = []
         self.debt_timeline[debt_asset].append(["liquidation", debt_to_cover, str(timestamp)])
 
     def to_json(self):
         data = dict()
-        data["collateral_timeline"] = self.collateral_timeline
         data["debt_timeline"] = self.debt_timeline
         return json.dumps(data)
 
@@ -76,20 +65,17 @@ def main(args):
 
     tx_history = load_tx_history(txhistory_file)
 
-    tx_method_types = dict()
-    liqidation_addresses_debt = dict()
-    liqidation_addresses_collateral = dict()
-    liqidation_addresses_pair = dict()
+    tx_method_types = defaultdict(int)
+    liqidation_addresses_debt = defaultdict(int)
+    liqidation_addresses_collateral = defaultdict(int)
+    liqidation_addresses_pair = defaultdict(int)
     user_data = dict()
 
     for index, row in tx_history.iterrows():
         input_decoded = json.loads(row['input_decoded'])
     	
         # count method types:
-        if input_decoded["method"] in tx_method_types:
-            tx_method_types[input_decoded["method"]] += 1
-        else:
-            tx_method_types[input_decoded["method"]] = 1
+        tx_method_types[input_decoded["method"]] += 1
 
         # collect all dept & collateral addresses
         if input_decoded["method"] == "liquidationCall" and row["isError"] == 0:
@@ -98,77 +84,18 @@ def main(args):
 
             collateralAsset = assetAddresses[collateralAssetAddress]
             debtAsset = assetAddresses[debtAssetAddress]
-
-            if collateralAsset in liqidation_addresses_collateral:
-                liqidation_addresses_collateral[collateralAsset] += 1
-            else:
-                liqidation_addresses_collateral[collateralAsset] = 1
-
-            if debtAsset in liqidation_addresses_debt:
-                liqidation_addresses_debt[debtAsset] += 1
-            else:
-                liqidation_addresses_debt[debtAsset] = 1
-
             pair = collateralAsset + "/" + debtAsset
-            if pair in liqidation_addresses_pair:
-                liqidation_addresses_pair[pair] += 1
-            else:
-                liqidation_addresses_pair[pair] = 1
 
-        # users
-        user = row["from"]
-        if user not in user_data:
-            user_data[user] = UserData()
-        
-        if input_decoded["method"] == "deposit":
-            asset_address = input_decoded["inputs"][0]
-            asset = assetAddresses.get(asset_address, asset_address) 
-            amount = int(input_decoded["inputs"][1],16)
-            timestamp = row["timestamp"]
-            user_data[user].add_deposit(asset, amount, timestamp)
-
-        if input_decoded["method"] == "withdraw":
-            asset_address = input_decoded["inputs"][0]
-            asset = assetAddresses.get(asset_address, asset_address)  #change ???
-            amount = int(input_decoded["inputs"][1],16)
-            timestamp = row["timestamp"]
-            user_data[user].add_withdraw(asset, amount, timestamp)
-
-        if input_decoded["method"] == "borrow":
-            asset_address = input_decoded["inputs"][0]
-            asset = assetAddresses.get(asset_address, asset_address) 
-            amount = int(input_decoded["inputs"][1],16)
-            timestamp = row["timestamp"]
-            user_data[user].add_borrow(asset, amount, timestamp)
-
-        if input_decoded["method"] == "repay":
-            asset_address = input_decoded["inputs"][0]
-            asset = assetAddresses.get(asset_address, asset_address) 
-            amount = int(input_decoded["inputs"][1],16)
-            timestamp = row["timestamp"]
-            user_data[user].add_repay(asset, amount, timestamp)
-
-        if input_decoded["method"] == "liquidationCall":
-            collateral_asset_address = input_decoded["inputs"][0]
-            debt_asset_address = input_decoded["inputs"][1]
-            liquidation_victim = input_decoded["inputs"][2]
-            collateral_asset = assetAddresses.get(collateral_asset_address, collateral_asset_address) 
-            debt_asset = assetAddresses.get(debt_asset_address, debt_asset_address) 
-            debt_to_cover = int(input_decoded["inputs"][3],16)
-            timestamp = row["timestamp"]
-
-            if liquidation_victim not in user_data:
-                user_data[liquidation_victim] = UserData()
-            user_data[liquidation_victim].add_liquidation_victim(collateral_asset, debt_asset, debt_to_cover, timestamp)
-
-
+            liqidation_addresses_collateral[collateralAsset] += 1
+            liqidation_addresses_debt[debtAsset] += 1
+            liqidation_addresses_pair[pair] += 1
 
     liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
     results['liqidation_rate_overall'] = liqidation_rate_overall
     results['tx_method_types'] = tx_method_types
-    results['liqidation_addresses_debt'] = liqidation_addresses_debt
-    results['liqidation_addresses_collateral'] = liqidation_addresses_collateral
+    results['liqidation_addresses_debt'] = {k: v for k, v in sorted(liqidation_addresses_debt.items(), key=lambda item: item[1], reverse=True)}
+    results['liqidation_addresses_collateral'] = {k: v for k, v in sorted(liqidation_addresses_collateral.items(), key=lambda item: item[1], reverse=True)}
     results['liqidation_addresses_pair (collateral / debt)'] = {k: v for k, v in sorted(liqidation_addresses_pair.items(), key=lambda item: item[1], reverse=True)}
     results["tx_count"] = len(tx_history.index)
     #results['users_count'] = len(users)
