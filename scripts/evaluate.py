@@ -88,7 +88,8 @@ def main(args):
         '0bc529c00c6401aef6d220be8c6ea1667f6ad93e' : 'YFI',
         'dd974d5c2e2928dea5f71b9825b8b646686bd200' : 'KNC',
         '9f8f72aa9304c8b593d555f12ef6589cc3a579a2' : 'MKR',
-        'd5147bc8e386d91cc5dbe72099dac6c9b99276f5' : 'RENFIL'
+        'd5147bc8e386d91cc5dbe72099dac6c9b99276f5' : 'RENFIL',
+        '03ab458634910aad20ef5f1c8ee96f1d6ac54919' : 'RAI'
     }
     assetGroups = {
         'USDT'   : 'USD'    ,
