@@ -8,6 +8,15 @@ def load_tx_history(file):
     df = pd.read_csv(file, sep=";") 
     return df
 
+def convert_hexunit256_to_int(num_string):
+    UINT_MAX_VALUE = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    if(num_string == UINT_MAX_VALUE):
+        return -1
+    else:
+        return int(num_string, 16)
+
+def sort_dict_by_value(dict, reverse):
+    return {k: v for k, v in sorted(dict.items(), key=lambda item: item[1], reverse=reverse)}
 
 class UserData:
     def __init__(self):
@@ -60,7 +69,38 @@ def main(args):
         '8798249c2e607446efb7ad49ec89dd1865ff4272' : 'SUSHI',
         '4fabb145d64652a948d72533023f6e7a623c7c53' : 'BUSD', 
         'e41d2489571d322189246dafa5ebde1f4699f498' : 'ZRX',  
-        '0f5d2fb29fb7d3cfee444a200298f468908cc942' : 'MANA', 
+        '0f5d2fb29fb7d3cfee444a200298f468908cc942' : 'MANA',
+        '0bc529c00c6401aef6d220be8c6ea1667f6ad93e' : 'YFI',
+        'dd974d5c2e2928dea5f71b9825b8b646686bd200' : 'KNC',
+        '9f8f72aa9304c8b593d555f12ef6589cc3a579a2' : 'MKR',
+        'd5147bc8e386d91cc5dbe72099dac6c9b99276f5' : 'RENFIL'
+    }
+    assetGroups = {
+        'USDT'   : 'USD'    ,
+        'BAL'    : 'BAL'    ,
+        'SNX'    : 'SNX'    ,
+        'GUSD'   : 'USD'    ,
+        'CRV'    : 'CRV'    ,
+        'TUSD'   : 'USD'    ,
+        'SUSD'   : 'USD'    ,
+        'UNI'    : 'UNI'    ,
+        'WETH'   : 'ETH'    ,
+        'BAT'    : 'BAT'    ,
+        'WBTC'   : 'BTC'    ,
+        'LINK'   : 'LINK'   ,
+        'AAVE'   : 'AAVE'   ,
+        'REN'    : 'REN'    ,
+        'ENJ'    : 'ENJ'    ,
+        'DAI'    : 'USD'    ,
+        'USDC'   : 'USD'    ,
+        'SUSHI'  : 'SUSHI'  ,
+        'BUSD'   : 'USD'    ,
+        'ZRX'    : 'ZRX'    ,
+        'MANA'   : 'MANA'   ,
+        'YFI'    : 'YFI'    ,
+        'KNC'    : 'KNC'    ,
+        'MKR'    : 'MKR'    ,
+        'RENFIL' : 'RENFIL' 
     }
 
     tx_history = load_tx_history(txhistory_file)
@@ -75,7 +115,8 @@ def main(args):
         input_decoded = json.loads(row['input_decoded'])
     	
         # count method types:
-        tx_method_types[input_decoded["method"]] += 1
+        if row["isError"] == 0:
+            tx_method_types[input_decoded["method"]] += 1
 
         # collect all dept & collateral addresses
         if input_decoded["method"] == "liquidationCall" and row["isError"] == 0:
@@ -90,24 +131,106 @@ def main(args):
             liqidation_addresses_debt[debtAsset] += 1
             liqidation_addresses_pair[pair] += 1
 
+        # make debt_timeline
+        if input_decoded["method"] == "borrow" and row["isError"] == 0:
+            asset_address = input_decoded["inputs"][0]
+            asset = assetAddresses.get(asset_address, asset_address)
+
+            amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+            timestamp = row["timestamp"]
+            user = input_decoded["inputs"][4] #onBehalfOf
+            if user not in user_data:
+                user_data[user] = UserData()
+            user_data[user].add_borrow(asset, amount, timestamp)
+
+        if input_decoded["method"] == "repay" and row["isError"] == 0:
+            asset_address = input_decoded["inputs"][0]
+            asset = assetAddresses.get(asset_address, asset_address) 
+            amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+            user = input_decoded["inputs"][3] #onBehalfOf
+            if user not in user_data:
+                user_data[user] = UserData()
+            user_data[user].add_repay(asset, amount, timestamp)
+
+        if input_decoded["method"] == "liquidationCall" and row["isError"] == 0:
+            debt_asset_address = input_decoded["inputs"][1]
+            debt_asset = assetAddresses.get(debt_asset_address, debt_asset_address) 
+            debt_to_cover = convert_hexunit256_to_int(input_decoded["inputs"][3])
+            user = input_decoded["inputs"][2] 
+            if user not in user_data:
+                user_data[user] = UserData()
+            user_data[user].add_liquidation_victim(debt_asset, debt_to_cover, timestamp)
+
+    liquidated_pairs_grouped =  defaultdict(int)
+    for pair, count in liqidation_addresses_pair.items():
+        pair_arr = pair.split("/")
+        collateral = pair_arr[0]
+        debt = pair_arr[1]
+        collateral_new = assetGroups.get(collateral, collateral)
+        debt_new = assetGroups.get(debt, debt)
+        pair_new = collateral_new + "/" + debt_new
+        liquidated_pairs_grouped[pair_new] += count
+
+    loans_with_no_problems = defaultdict(int)
+    loans_with_problems = defaultdict(int)
+    for user, user_data in user_data.items():
+        for asset, events in user_data.debt_timeline.items():
+            # determine loan
+            debt = 0
+            liquidations = 0
+            for event in events:
+                action = event[0]
+                amount = event[1]
+                if action == "borrow":
+                    debt += amount
+                if action == "repay":
+                    if amount == -1:
+                        debt = 0
+                    else:
+                        debt -= amount
+                if action == "liquidation":
+                    if amount == -1:
+                        debt = debt/2   # we assume 50% are paid, but the exact value doesnt matter
+                    else:
+                        debt -= amount
+                    liquidations += 1
+            status = "open"
+            if debt <= 0:
+                status = "repayed"
+            # save in loan count
+            if status == "repayed" and liquidations == 0:
+                loans_with_no_problems[asset] += 1
+            if liquidations > 0:
+                loans_with_problems[asset] += 1
+
+    loans_with_no_problems_sum = sum(loans_with_no_problems.values())
+    loans_with_problems_sum = sum(loans_with_problems.values())
+
+    loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
+    risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
+
     liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
+    results["tx_count"] = len(tx_history.index)
     results['liqidation_rate_overall'] = liqidation_rate_overall
     results['tx_method_types'] = tx_method_types
-    results['liqidation_addresses_debt'] = {k: v for k, v in sorted(liqidation_addresses_debt.items(), key=lambda item: item[1], reverse=True)}
-    results['liqidation_addresses_collateral'] = {k: v for k, v in sorted(liqidation_addresses_collateral.items(), key=lambda item: item[1], reverse=True)}
-    results['liqidation_addresses_pair (collateral / debt)'] = {k: v for k, v in sorted(liqidation_addresses_pair.items(), key=lambda item: item[1], reverse=True)}
-    results["tx_count"] = len(tx_history.index)
+    results['liqidation_addresses_debt'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
+    results['liqidation_addresses_collateral'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
+    results['liqidation_addresses_pair (collateral / debt)'] = sort_dict_by_value(liqidation_addresses_pair, reverse=True)
+    results['liquidated_pairs_grouped (collateral / debt)'] = sort_dict_by_value(liquidated_pairs_grouped, reverse=True)
+
     #results['users_count'] = len(users)
+    results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
+    results["loans_with_problems_sum"] = loans_with_problems_sum 
+    results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
+    results["loans_with_no problems_sum"] = loans_with_no_problems_sum 
+    results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
+
 
     with open(output_file, 'w') as fp:
         json.dump(results, fp, indent=4)
 
-    with open('readme.txt', 'w') as f:
-        f.write("[\n")        
-        for user, userdata in user_data.items():
-            f.write('{"' + user + '":' + userdata.to_json()+"},\n")
-        f.write("]")        
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
