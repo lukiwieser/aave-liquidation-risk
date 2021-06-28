@@ -161,6 +161,7 @@ def main(args):
                 user_data[user] = UserData()
             user_data[user].add_liquidation_victim(debt_asset, debt_to_cover, timestamp)
 
+    # group liquidated asset pairs
     liquidated_pairs_grouped =  defaultdict(int)
     for pair, count in liqidation_addresses_pair.items():
         pair_arr = pair.split("/")
@@ -171,6 +172,7 @@ def main(args):
         pair_new = collateral_new + "/" + debt_new
         liquidated_pairs_grouped[pair_new] += count
 
+    # calc probelmatic/not probelmatic loans from debt-timeline
     loans_with_no_problems = defaultdict(int)
     loans_with_problems = defaultdict(int)
     for user, user_data in user_data.items():
@@ -211,6 +213,7 @@ def main(args):
 
     liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
+
     results["tx_count"] = len(tx_history.index)
     results['liqidation_rate_overall'] = liqidation_rate_overall
     results['tx_method_types'] = tx_method_types
@@ -218,8 +221,6 @@ def main(args):
     results['liqidation_addresses_collateral'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
     results['liqidation_addresses_pair (collateral / debt)'] = sort_dict_by_value(liqidation_addresses_pair, reverse=True)
     results['liquidated_pairs_grouped (collateral / debt)'] = sort_dict_by_value(liquidated_pairs_grouped, reverse=True)
-
-    #results['users_count'] = len(users)
     results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
     results["loans_with_problems_sum"] = loans_with_problems_sum 
     results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
