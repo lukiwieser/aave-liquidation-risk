@@ -197,8 +197,10 @@ def main(args):
         liquidated_pairs_grouped[pair_new] += count
 
     # calc probelmatic/not probelmatic loans from debt-timeline
-    loans_with_no_problems = defaultdict(int)
     loans_with_problems = defaultdict(int)
+    loans_with_no_problems = defaultdict(int)
+    loans_with_no_problems_open = defaultdict(int)
+
     for user, user_data in user_data.items():
         for asset, events in user_data.debt_timeline.items():
             # determine loan
@@ -224,13 +226,17 @@ def main(args):
             if debt <= 0:
                 status = "repayed"
             # save in loan count
-            if status == "repayed" and liquidations == 0:
-                loans_with_no_problems[asset] += 1
+            if liquidations == 0:
+                 if status == "repayed":
+                    loans_with_no_problems[asset] += 1
+                 if status == "open":
+                    loans_with_no_problems_open[asset] += 1
             if liquidations > 0:
                 loans_with_problems[asset] += 1
 
     loans_with_no_problems_sum = sum(loans_with_no_problems.values())
     loans_with_problems_sum = sum(loans_with_problems.values())
+    loans_with_no_problems_open_sum = sum(loans_with_no_problems_open.values())
 
     loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
     risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
@@ -241,17 +247,23 @@ def main(args):
     df_liquidation_timeline = df_liquidation_timeline.groupby(['date','pair']).date.agg('count').to_frame('liquidations').reset_index()
     df_liquidation_timeline = df_liquidation_timeline.sort_values('date')
 
+
     results["tx_count"] = len(tx_history.index)
-    results['liqidation_rate_overall'] = liqidation_rate_overall
     results['tx_method_types'] = tx_method_types
-    results['liqidation_addresses_debt'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
-    results['liqidation_addresses_collateral'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
-    results['liqidation_addresses_pair (collateral / debt)'] = sort_dict_by_value(liqidation_addresses_pair, reverse=True)
+    results['liqidation_rate_overall'] = liqidation_rate_overall    # liquidations per borrow
+
+    results['liquidated_debt_assets'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
+    results['liquidated_colateral_assets'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
+
+    results['liquidated_pairs (collateral / debt)'] = sort_dict_by_value(liqidation_addresses_pair, reverse=True)
     results['liquidated_pairs_grouped (collateral / debt)'] = sort_dict_by_value(liquidated_pairs_grouped, reverse=True)
+
+    results["loans_without_problems_open_count"] = loans_with_no_problems_open_sum
+    results["loans_without_problems_repayed_count"] = loans_with_no_problems_sum  
+    results["loans_with_problems_count"] = loans_with_problems_sum 
     results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
-    results["loans_with_problems_sum"] = loans_with_problems_sum 
+
     results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
-    results["loans_with_no problems_sum"] = loans_with_no_problems_sum 
     results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
 
     save_dataframe(df_liquidation_timeline, "../reports", "liquidation_timeline.csv")
