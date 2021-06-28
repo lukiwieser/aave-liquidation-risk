@@ -3,7 +3,7 @@ import json
 import requests
 from urllib import parse
 from pathlib import Path
-
+import dateutil.parser as dp
 
 BASE_URL = "https://rest.coinapi.io/v1"
 API_KEY = "A098ECCE-FC1E-4594-9C68-9ADF339D40AD"
@@ -14,6 +14,11 @@ def save_dataframe(df, out_directory, out_file):
     out_directory.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_directory / out_file, index = False, header=True)
 
+# input:    2020-12-01T00:00:00.0000000Z
+# output:   2020-12-01T00:00:00
+def simplify_iso_date(date):
+    new_date = dp.parse(date, ignoretz=True)
+    return new_date.isoformat()
 
 def main():
     assets = [
@@ -58,7 +63,8 @@ def main():
 
         data = []
         for item in d:
-            data.append([item["time_period_start"],item["price_open"], item["price_high"], item["price_low"], item["price_close"]])
+            date = simplify_iso_date(item["time_period_start"])
+            data.append([date,item["price_open"], item["price_high"], item["price_low"], item["price_close"]])
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close'])
 
         save_dataframe(df, "../data/raw/price-history", asset + "-" + quote + ".csv")

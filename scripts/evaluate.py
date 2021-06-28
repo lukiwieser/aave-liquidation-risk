@@ -3,6 +3,13 @@ import json
 import pandas as pd
 from enum import Enum
 from collections import defaultdict 
+from pathlib import Path
+import datetime
+
+def save_dataframe(df, out_directory, out_file):
+    out_directory = Path(out_directory)
+    out_directory.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out_directory / out_file, index = False, header=True)
 
 def load_tx_history(file):
     df = pd.read_csv(file, sep=";") 
@@ -17,6 +24,14 @@ def convert_hexunit256_to_int(num_string):
 
 def sort_dict_by_value(dict, reverse):
     return {k: v for k, v in sorted(dict.items(), key=lambda item: item[1], reverse=reverse)}
+
+# input:    1606836555
+# output:   2020-12-01T00:00:00
+def timestamp_to_simple_iso(timestamp, shouldStripTime):
+    date = datetime.datetime.utcfromtimestamp(timestamp)
+    if shouldStripTime == True:
+        date = date.replace(hour=0, minute=0, second=0, microsecond=0) 
+    return date.isoformat()
 
 class UserData:
     def __init__(self):
@@ -110,6 +125,7 @@ def main(args):
     liqidation_addresses_collateral = defaultdict(int)
     liqidation_addresses_pair = defaultdict(int)
     user_data = dict()
+    liquidation_timeline = []
 
     for index, row in tx_history.iterrows():
         input_decoded = json.loads(row['input_decoded'])
@@ -130,6 +146,13 @@ def main(args):
             liqidation_addresses_collateral[collateralAsset] += 1
             liqidation_addresses_debt[debtAsset] += 1
             liqidation_addresses_pair[pair] += 1
+
+            timestamp = row["timestamp"]
+            date = timestamp_to_simple_iso(timestamp, True)
+            collateral_asset_grouped = assetGroups.get(collateralAsset, collateralAsset)
+            debt_asset_grouped = assetGroups.get(debtAsset, debtAsset)
+            pair_grouped = collateral_asset_grouped + "/" + debt_asset_grouped
+            liquidation_timeline.append([date,pair_grouped])
 
         # make debt_timeline
         if input_decoded["method"] == "borrow" and row["isError"] == 0:
@@ -213,6 +236,9 @@ def main(args):
 
     liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
+    df_liquidation_timeline = pd.DataFrame(liquidation_timeline, columns=['date','pair'])
+    df_liquidation_timeline = df_liquidation_timeline.groupby(['date','pair']).date.agg('count').to_frame('liquidations').reset_index()
+    df_liquidation_timeline = df_liquidation_timeline.sort_values('date')
 
     results["tx_count"] = len(tx_history.index)
     results['liqidation_rate_overall'] = liqidation_rate_overall
@@ -227,6 +253,7 @@ def main(args):
     results["loans_with_no problems_sum"] = loans_with_no_problems_sum 
     results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
 
+    save_dataframe(df_liquidation_timeline, "../reports", "liquidation_timeline.csv")
 
     with open(output_file, 'w') as fp:
         json.dump(results, fp, indent=4)
