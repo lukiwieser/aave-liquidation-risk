@@ -242,10 +242,20 @@ def main(args):
     loans_with_no_problems_open = defaultdict(int)
 
     for user, data in user_data.items():
+        # collateral_interval = ...
+        # [t1,t2,]
+
+        # for asset, events in collaterals_timeline
+        #   if action == deposit
+        #   if action == collateral
+        # 
+        # 
+        #       
+
         for asset, events in data.debt_timeline.items():
             # determine loan
             debt = 0
-            liquidations = 0
+            hasCurrentDebtLiquidations = False
             for event in events:
                 action = event[0]
                 amount = event[1]
@@ -261,18 +271,22 @@ def main(args):
                         debt = debt/2   # we assume 50% are paid, but the exact value doesnt matter
                     else:
                         debt -= amount
-                    liquidations += 1
-            status = "open"
-            if debt <= 0:
-                status = "repayed"
-            # save in loan count
-            if liquidations == 0:
-                 if status == "repayed":
-                    loans_with_no_problems[asset] += 1
-                 if status == "open":
-                    loans_with_no_problems_open[asset] += 1
-            if liquidations > 0:
-                loans_with_problems[asset] += 1
+                    hasCurrentDebtLiquidations = True
+                # check if loan was paid back
+                if action == "repay" or  action == "liquidation":
+                    if debt <= 0:
+                        if hasCurrentDebtLiquidations:
+                            loans_with_problems[asset] += 1
+                        else:
+                            loans_with_no_problems[asset] += 1
+                        debt = 0
+                        hasCurrentDebtLiquidations = False
+            # check if loan is open
+            if debt > 0:
+                if hasCurrentDebtLiquidations:
+                    loans_with_problems[asset] += 1
+                else: 
+                    loans_with_no_problems_open[asset] += 1               
 
     loans_with_no_problems_sum = sum(loans_with_no_problems.values())
     loans_with_problems_sum = sum(loans_with_problems.values())
