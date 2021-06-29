@@ -6,6 +6,13 @@ from collections import defaultdict
 from pathlib import Path
 import datetime
 
+class Loan:
+    def __init__(self, t1, t2, status, hasLiquidation):
+        self.t1 = t1
+        self.t2 = t2
+        self.status = status
+        self.hasLiquidation = hasLiquidation
+        
 def strip_0x_from_address(address):
     if address[:2] == "0x":
         address = address[2:]
@@ -254,12 +261,17 @@ def main(args):
 
         for asset, events in data.debt_timeline.items():
             # determine loan
+            loans = []
             debt = 0
+            currentLoanStartTimestamp = -1
             hasCurrentDebtLiquidations = False
             for event in events:
                 action = event[0]
                 amount = event[1]
+                timestamp = event[2]
                 if action == "borrow":
+                    if currentLoanStartTimestamp == -1:
+                        currentLoanStartTimestamp = timestamp
                     debt += amount
                 if action == "repay":
                     if amount == -1:
@@ -274,19 +286,29 @@ def main(args):
                     hasCurrentDebtLiquidations = True
                 # check if loan was paid back
                 if action == "repay" or  action == "liquidation":
+                    timestamp = event[2]
                     if debt <= 0:
-                        if hasCurrentDebtLiquidations:
-                            loans_with_problems[asset] += 1
-                        else:
-                            loans_with_no_problems[asset] += 1
+                        loans.append(Loan(currentLoanStartTimestamp, timestamp, "repayed", hasCurrentDebtLiquidations))
                         debt = 0
+                        currentLoanStartTimestamp = -1
                         hasCurrentDebtLiquidations = False
             # check if loan is open
             if debt > 0:
-                if hasCurrentDebtLiquidations:
+                loans.append(Loan(currentLoanStartTimestamp, -1, "open", hasCurrentDebtLiquidations))
+            # count loans
+            for loan in loans:
+                if loan.hasLiquidation:
                     loans_with_problems[asset] += 1
-                else: 
-                    loans_with_no_problems_open[asset] += 1               
+                else:
+                    if loan.status == "repayed":
+                        loans_with_no_problems[asset] += 1
+                    if loan.status == "open":
+                        loans_with_no_problems_open[asset] += 1               
+                #loan.t1
+                #loan.t2
+                #loan.status
+                #loan.hasLiquidation
+
 
     loans_with_no_problems_sum = sum(loans_with_no_problems.values())
     loans_with_problems_sum = sum(loans_with_problems.values())
