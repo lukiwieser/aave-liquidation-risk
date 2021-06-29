@@ -23,7 +23,7 @@ def main():
     ax = sns.barplot(x="pair", y="risk", data=df, ax=ax).set_title('asset-pair risk')
     ax = plt.gca()
     ax.axhline(AVG*100)
-    ax.set_xlabel('asset-pair') 
+    ax.set_xlabel('asset-pair (collateral/debt)') 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     ax.tick_params(labelsize=10)
 
