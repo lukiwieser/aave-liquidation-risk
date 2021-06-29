@@ -405,17 +405,33 @@ def main(args):
     loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
     risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
 
-    liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
     df_liquidation_timeline = pd.DataFrame(liquidation_timeline, columns=['date','pair'])
     df_liquidation_timeline = df_liquidation_timeline.groupby(['date','pair']).date.agg('count').to_frame('liquidations').reset_index()
     df_liquidation_timeline = df_liquidation_timeline.sort_values('date')
 
+    tx_count = dict()
+    tx_count["lending_pool"] = len(tx_history.index)
+    tx_count["weth-gateway"] = len(tx_history_weth_gateway.index)
+    tx_count["all"] = tx_count["lending_pool"] + tx_count["weth-gateway"]
 
-    results["tx_count"] = len(tx_history.index)
+    for method_type, count in weth_gateway_methods.items():
+        if method_type == "depositETH":
+            tx_method_types["deposit"] += count
+        elif method_type == "withdrawETH":
+            tx_method_types["withdraw"] += count
+        elif method_type == "repayETH":
+            tx_method_types["repay"] += count
+        elif method_type == "borrowETH":
+            tx_method_types["borrow"] += count
+        else:
+            tx_method_types[method_type] = count
+
+    liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
+
+    results["tx_count"] = tx_count
     results['tx_method_types'] = tx_method_types
     results['liqidation_rate_overall'] = liqidation_rate_overall    # liquidations per borrow
-    results["weth_gateway_method_types"] = weth_gateway_methods
     
     results['liquidated_debt_assets'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
     results['liquidated_colateral_assets'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
