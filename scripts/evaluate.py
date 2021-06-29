@@ -409,6 +409,15 @@ def main(args):
                     weigth = round(1/len(pairs),4)
                     pairs_without_problems[pair] += weigth
 
+    # group pairs_without_problems:
+    loan_pairs_without_problems_grouped = defaultdict(int)
+    for pair, count in pairs_without_problems.items():
+        collateral = pair.split("/")[0]
+        debt = pair.split("/")[1]
+        collateral_new = assetGroups.get(collateral, collateral)
+        debt_new = assetGroups.get(debt, debt)
+        pair_new = collateral_new + "/" + debt_new
+        loan_pairs_without_problems_grouped[pair_new] += count
 
     loans_with_no_problems_sum = sum(loans_with_no_problems.values())
     loans_with_problems_sum = sum(loans_with_problems.values())
@@ -419,8 +428,16 @@ def main(args):
     collateral_assets_closed_sum = sum(collateral_assets_closed.values())
     collateral_assets_open_sum = sum(collateral_assets_open.values())
 
-    loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
-    risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
+    # calc grouped liquidation risk
+    liquidation_risk_per_pair_grouped = dict()
+    for pair, count in loan_pairs_without_problems_grouped.items():
+        liquidations = liquidated_pairs_grouped.get(pair, 0)
+        count_scaled = count / loan_pairs_without_problems_coverage
+        risk = liquidations / count_scaled
+        liquidation_risk_per_pair_grouped[pair] = risk
+
+    loans_all = loans_with_no_problems_sum + loans_with_no_problems_open_sum + loans_with_problems_sum
+    risk_of_loan_with_problem = loans_with_problems_sum / (loans_all)
 
 
     df_liquidation_timeline = pd.DataFrame(liquidation_timeline, columns=['date','pair'])
@@ -463,9 +480,13 @@ def main(args):
     results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
     results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
     results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
-    results["loan_pairs_without_problems_sum"] = round(pairs_without_problems_sum,0)
-    results["loan_pairs_without_problems"] = sort_dict_by_value(round_dict_values(pairs_without_problems, 0), reverse=True)
+
     results["loan_pairs_without_problems_coverage"] = round(loan_pairs_without_problems_coverage, 2)
+    results["loan_pairs_without_problems_sum"] = round(pairs_without_problems_sum,0)
+    #results["loan_pairs_without_problems"] = sort_dict_by_value(round_dict_values(pairs_without_problems, 0), reverse=True)
+    results["loan_pairs_without_problems_grouped"] = sort_dict_by_value(round_dict_values(loan_pairs_without_problems_grouped, 0), reverse=True)
+    
+    results["liquidation_risk_per_pair_grouped"] = sort_dict_by_value(round_dict_values(liquidation_risk_per_pair_grouped, 6), reverse=True)
     
     results["collateral_assets_open_sum"] = collateral_assets_open_sum
     results["collateral_assets_closed_sum"] = collateral_assets_closed_sum
