@@ -12,7 +12,13 @@ class Loan:
         self.t2 = t2
         self.status = status
         self.hasLiquidation = hasLiquidation
-        
+
+class Collateral:
+    def __init__(self, t1, t2, amount):
+        self.t1 = t1
+        self.t2 = t2
+        self.amount = amount
+
 def strip_0x_from_address(address):
     if address[:2] == "0x":
         address = address[2:]
@@ -247,6 +253,9 @@ def main(args):
     loans_with_problems = defaultdict(int)
     loans_with_no_problems = defaultdict(int)
     loans_with_no_problems_open = defaultdict(int)
+    collateral_assets_closed = defaultdict(int)
+    collateral_assets_open = defaultdict(int)
+
 
     for user, data in user_data.items():
         # collateral_interval = ...
@@ -257,8 +266,44 @@ def main(args):
         #   if action == collateral
         # 
         # 
-        #       
+        #
 
+        collateral_intervals = defaultdict(list)
+        for asset, events in data.collateral_timeline.items():
+            balance = 0
+            totalAddedAmount = 0
+            currentCollateralStartTimestamp = -1
+            for event in events:
+                action = event[0]
+                amount = event[1]
+                timestamp = event[2]
+                if action == "deposit":
+                    if currentCollateralStartTimestamp == -1:
+                        currentCollateralStartTimestamp = timestamp
+                    balance += amount
+                    totalAddedAmount += amount
+                if action == "withdraw":
+                    if amount == -1:
+                        balance = 0
+                    else:
+                        balance -= amount
+                    # check if collateral is closed
+                    if balance <= 0:
+                        collateral_intervals[asset].append(Collateral(currentCollateralStartTimestamp,timestamp, totalAddedAmount))
+                        balance = 0
+                        totalAddedAmount = 0
+                        currentCollateralStartTimestamp = -1
+            # check if collateral is still open
+            if balance > 0:
+                collateral_intervals[asset].append(Collateral(currentCollateralStartTimestamp,-1,totalAddedAmount))
+        # count
+        for asset, collaterals in collateral_intervals.items():
+            for collateral in collaterals:
+                if collateral.t2 == -1:
+                    collateral_assets_open[asset] += 1
+                else:
+                    collateral_assets_closed[asset] += 1
+        
         for asset, events in data.debt_timeline.items():
             # determine loan
             loans = []
@@ -314,6 +359,9 @@ def main(args):
     loans_with_problems_sum = sum(loans_with_problems.values())
     loans_with_no_problems_open_sum = sum(loans_with_no_problems_open.values())
 
+    collateral_assets_closed_sum = sum(collateral_assets_closed.values())
+    collateral_assets_open_sum = sum(collateral_assets_open.values())
+
     loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
     risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
 
@@ -338,9 +386,13 @@ def main(args):
     results["loans_without_problems_repayed_count"] = loans_with_no_problems_sum  
     results["loans_with_problems_count"] = loans_with_problems_sum 
     results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
-
     results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
     results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
+
+    results["collateral_assets_open_sum"] = collateral_assets_open_sum
+    results["collateral_assets_closed_sum"] = collateral_assets_closed_sum
+    results["collateral_assets_open"] = sort_dict_by_value(collateral_assets_open, reverse=True)
+    results["collateral_assets_closed"] = sort_dict_by_value(collateral_assets_closed, reverse=True)
 
     save_dataframe(df_liquidation_timeline, "../reports", "liquidation_timeline.csv")
 
