@@ -412,8 +412,8 @@ def main(args):
 
     tx_count = dict()
     tx_count["lending_pool"] = len(tx_history.index)
-    tx_count["weth-gateway"] = len(tx_history_weth_gateway.index)
-    tx_count["all"] = tx_count["lending_pool"] + tx_count["weth-gateway"]
+    tx_count["weth_gateway"] = len(tx_history_weth_gateway.index)
+    tx_count["all"] = tx_count["lending_pool"] + tx_count["weth_gateway"]
 
     for method_type, count in weth_gateway_methods.items():
         if method_type == "depositETH":
@@ -427,11 +427,11 @@ def main(args):
         else:
             tx_method_types[method_type] = count
 
-    liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
-
+    liquidations_per_borrows = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
+    
     results["tx_count"] = tx_count
     results['tx_method_types'] = tx_method_types
-    results['liqidation_rate_overall'] = liqidation_rate_overall    # liquidations per borrow
+    results['liquidations_per_borrows'] = liquidations_per_borrows   
     
     results['liquidated_debt_assets'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
     results['liquidated_colateral_assets'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
