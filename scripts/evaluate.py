@@ -81,15 +81,21 @@ class UserData:
             self.collateral_timeline[asset] = []
         self.collateral_timeline[asset].append(["withdraw", amount, str(timestamp)])
 
+    def sort_timelines(self):
+        for asset, events in self.debt_timeline.items():
+            self.debt_timeline[asset] = sorted(events, key=lambda x: x[2])
+        for asset, events in self.collateral_timeline.items():
+            self.collateral_timeline[asset] = sorted(events, key=lambda x: x[2])
+
     def to_json(self):
         data = dict()
         data["debt_timeline"] = self.debt_timeline
         data["collateral_timeline"] = self.collateral_timeline
         return json.dumps(data)
 
+LENDING_POOL_V2_ADDRESS = "7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
 
 def main(args):
-    txhistory_file = args.txhistory
     output_file = args.output
     results = dict()
 
@@ -149,7 +155,8 @@ def main(args):
         'RENFIL' : 'RENFIL' 
     }
 
-    tx_history = load_tx_history(txhistory_file)
+    tx_history = load_tx_history("../data/parsed/tx-history.csv")
+    tx_history_weth_gateway = load_tx_history("../data/parsed/tx-history-weth-gateway.csv") 
 
     tx_method_types = defaultdict(int)
     liqidation_addresses_debt = defaultdict(int)
@@ -185,7 +192,7 @@ def main(args):
             pair_grouped = collateral_asset_grouped + "/" + debt_asset_grouped
             liquidation_timeline.append([date,pair_grouped])
 
-        # make debt_timeline
+        # make debt_timeline (excluding ETH)
         if input_decoded["method"] == "borrow" and row["isError"] == 0:
             asset_address = input_decoded["inputs"][0]
             asset = assetAddresses.get(asset_address, asset_address)
@@ -217,7 +224,7 @@ def main(args):
                 user_data[user] = UserData()
             user_data[user].add_liquidation_victim(debt_asset, debt_to_cover, timestamp)
         
-        # make collateral timeline
+        # make collateral timeline (excluding ETH)
         if input_decoded["method"] == "deposit" and row["isError"] == 0:
             asset_address = input_decoded["inputs"][0]
             asset = assetAddresses.get(asset_address, asset_address) 
@@ -238,6 +245,44 @@ def main(args):
                 user_data[user] = UserData()
             user_data[user].add_withdraw(asset, amount, timestamp)
 
+    weth_gateway_methods = defaultdict(int)
+
+    for index, row in tx_history_weth_gateway.iterrows():
+        if row["isError"] == 0:
+            input_decoded = json.loads(row['input_decoded'])
+            timestamp = row["timestamp"]
+            lending_pool_address = input_decoded["inputs"][0]
+
+            if lending_pool_address.lower() == LENDING_POOL_V2_ADDRESS.lower():
+                weth_gateway_methods[input_decoded["method"]] += 1
+                # collateral timeline
+                if input_decoded["method"] == "depositETH":
+                    amount = int(row["value"])
+                    user = strip_0x_from_address(input_decoded["inputs"][1])
+                    if user not in user_data:
+                        user_data[user] = UserData()
+                    user_data[user].add_deposit("WETH", amount, timestamp)
+                if input_decoded["method"] == "withdrawETH":
+                    amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+                    user = strip_0x_from_address(row["from"])
+                    if user not in user_data:
+                        user_data[user] = UserData()
+                    user_data[user].add_withdraw("WETH", amount, timestamp)
+
+                # debt timeline
+                if input_decoded["method"] == "borrowETH":
+                    amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+                    user = strip_0x_from_address(row["from"])
+                    if user not in user_data:
+                        user_data[user] = UserData()
+                    user_data[user].add_borrow("WETH", amount, timestamp)
+                if input_decoded["method"] == "repayETH":
+                    amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+                    user = strip_0x_from_address(input_decoded["inputs"][3])
+                    if user not in user_data:
+                        user_data[user] = UserData()
+                    user_data[user].add_repay("WETH", amount, timestamp)
+
     # group liquidated asset pairs
     liquidated_pairs_grouped =  defaultdict(int)
     for pair, count in liqidation_addresses_pair.items():
@@ -249,6 +294,11 @@ def main(args):
         pair_new = collateral_new + "/" + debt_new
         liquidated_pairs_grouped[pair_new] += count
 
+    # sort collateral & debt timelines cronologicaly
+    for user, data in user_data.items():
+        data.sort_timelines()
+        user_data[user] = data
+
     # calc probelmatic/not probelmatic loans from debt-timeline
     loans_with_problems = defaultdict(int)
     loans_with_no_problems = defaultdict(int)
@@ -256,17 +306,7 @@ def main(args):
     collateral_assets_closed = defaultdict(int)
     collateral_assets_open = defaultdict(int)
 
-
     for user, data in user_data.items():
-        # collateral_interval = ...
-        # [t1,t2,]
-
-        # for asset, events in collaterals_timeline
-        #   if action == deposit
-        #   if action == collateral
-        # 
-        # 
-        #
 
         collateral_intervals = defaultdict(list)
         for asset, events in data.collateral_timeline.items():
@@ -365,17 +405,34 @@ def main(args):
     loans_repayed_or_liquidated = loans_with_no_problems_sum + loans_with_problems_sum
     risk_of_loan_with_problem = loans_with_problems_sum / (loans_repayed_or_liquidated)
 
-    liqidation_rate_overall = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
 
     df_liquidation_timeline = pd.DataFrame(liquidation_timeline, columns=['date','pair'])
     df_liquidation_timeline = df_liquidation_timeline.groupby(['date','pair']).date.agg('count').to_frame('liquidations').reset_index()
     df_liquidation_timeline = df_liquidation_timeline.sort_values('date')
 
+    tx_count = dict()
+    tx_count["lending_pool"] = len(tx_history.index)
+    tx_count["weth_gateway"] = len(tx_history_weth_gateway.index)
+    tx_count["all"] = tx_count["lending_pool"] + tx_count["weth_gateway"]
 
-    results["tx_count"] = len(tx_history.index)
+    for method_type, count in weth_gateway_methods.items():
+        if method_type == "depositETH":
+            tx_method_types["deposit"] += count
+        elif method_type == "withdrawETH":
+            tx_method_types["withdraw"] += count
+        elif method_type == "repayETH":
+            tx_method_types["repay"] += count
+        elif method_type == "borrowETH":
+            tx_method_types["borrow"] += count
+        else:
+            tx_method_types[method_type] = count
+
+    liquidations_per_borrows = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
+    
+    results["tx_count"] = tx_count
     results['tx_method_types'] = tx_method_types
-    results['liqidation_rate_overall'] = liqidation_rate_overall    # liquidations per borrow
-
+    results['liquidations_per_borrows'] = liquidations_per_borrows   
+    
     results['liquidated_debt_assets'] = sort_dict_by_value(liqidation_addresses_debt, reverse=True) 
     results['liquidated_colateral_assets'] = sort_dict_by_value(liqidation_addresses_collateral, reverse=True)
 
@@ -394,6 +451,8 @@ def main(args):
     results["collateral_assets_open"] = sort_dict_by_value(collateral_assets_open, reverse=True)
     results["collateral_assets_closed"] = sort_dict_by_value(collateral_assets_closed, reverse=True)
 
+    
+
     save_dataframe(df_liquidation_timeline, "../reports", "liquidation_timeline.csv")
 
     with open(output_file, 'w') as fp:
@@ -406,7 +465,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-o', '--output',help='Output file path (JSON)', type=str, required=False)
-    parser.add_argument('-t', '--txhistory',help='Input file path of parsed aave tx history (CSV)', type=str,required=True)
+    parser.add_argument('-t', '--txhistory',help='Input file path of parsed aave tx history (CSV)', type=str,required=False)
     args = parser.parse_args()
 
     main(args)
