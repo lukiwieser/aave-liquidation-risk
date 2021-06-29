@@ -43,6 +43,9 @@ def convert_hexunit256_to_int(num_string):
 def sort_dict_by_value(dict, reverse):
     return {k: v for k, v in sorted(dict.items(), key=lambda item: item[1], reverse=reverse)}
 
+def round_dict_values(dict, decimal_points):
+    return {k:round(v, decimal_points) for k, v in dict.items()}
+
 # input:    1606836555
 # output:   2020-12-01T00:00:00
 def timestamp_to_simple_iso(timestamp, shouldStripTime):
@@ -305,6 +308,7 @@ def main(args):
     loans_with_no_problems_open = defaultdict(int)
     collateral_assets_closed = defaultdict(int)
     collateral_assets_open = defaultdict(int)
+    pairs_without_problems = defaultdict(int)
 
     for user, data in user_data.items():
 
@@ -344,6 +348,8 @@ def main(args):
                 else:
                     collateral_assets_closed[asset] += 1
         
+        
+        #pairs_with_problems = dict()
         for asset, events in data.debt_timeline.items():
             # determine loan
             loans = []
@@ -389,15 +395,26 @@ def main(args):
                         loans_with_no_problems[asset] += 1
                     if loan.status == "open":
                         loans_with_no_problems_open[asset] += 1               
-                #loan.t1
-                #loan.t2
-                #loan.status
-                #loan.hasLiquidation
+            # pairs:
+            for loan in loans:
+                pairs = []
+                for collateral_asset, collaterals in collateral_intervals.items():
+                    for collateral in collaterals:               
+                        # check if loan is overlapped by a collateral that is not liquidated
+                        if (int(loan.t1) >= int(collateral.t1)) and ((int(collateral.t2) == -1) or (int(loan.t2) != -1 and int(loan.t2) <= int(collateral.t2))):
+                            pair = collateral_asset + "/" + asset
+                            if not loan.hasLiquidation:
+                                pairs.append(pair)
+                for pair in pairs:
+                    weigth = round(1/len(pairs),4)
+                    pairs_without_problems[pair] += weigth
 
 
     loans_with_no_problems_sum = sum(loans_with_no_problems.values())
     loans_with_problems_sum = sum(loans_with_problems.values())
     loans_with_no_problems_open_sum = sum(loans_with_no_problems_open.values())
+    pairs_without_problems_sum = sum(pairs_without_problems.values())
+    loan_pairs_without_problems_coverage = pairs_without_problems_sum / (loans_with_no_problems_open_sum + loans_with_no_problems_sum)
 
     collateral_assets_closed_sum = sum(collateral_assets_closed.values())
     collateral_assets_open_sum = sum(collateral_assets_open.values())
@@ -429,6 +446,7 @@ def main(args):
 
     liquidations_per_borrows = tx_method_types.get("liquidationCall",0) / tx_method_types.get("borrow",0)
     
+
     results["tx_count"] = tx_count
     results['tx_method_types'] = tx_method_types
     results['liquidations_per_borrows'] = liquidations_per_borrows   
@@ -445,7 +463,10 @@ def main(args):
     results["risk_of_loan_with_problem"] = risk_of_loan_with_problem 
     results["loans_with_problems"] = sort_dict_by_value(loans_with_problems, reverse=True)
     results["loans_with_no_problems"] = sort_dict_by_value(loans_with_no_problems, reverse=True)
-
+    results["loan_pairs_without_problems_sum"] = round(pairs_without_problems_sum,0)
+    results["loan_pairs_without_problems"] = sort_dict_by_value(round_dict_values(pairs_without_problems, 0), reverse=True)
+    results["loan_pairs_without_problems_coverage"] = round(loan_pairs_without_problems_coverage, 2)
+    
     results["collateral_assets_open_sum"] = collateral_assets_open_sum
     results["collateral_assets_closed_sum"] = collateral_assets_closed_sum
     results["collateral_assets_open"] = sort_dict_by_value(collateral_assets_open, reverse=True)
