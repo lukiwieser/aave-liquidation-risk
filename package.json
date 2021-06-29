@@ -18,8 +18,11 @@
   "homepage": "https://github.com/lukiwieser/aave-liquidation-analysis#readme",
   "dependencies": {
     "@aave/protocol-v2": "^1.0.1",
+    "@ethersproject/abi": "^5.4.0",
+    "abi-decoder": "^2.4.0",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
-    "ethereum-input-data-decoder": "^0.3.2"
+    "ethereum-input-data-decoder": "^0.3.2",
+    "ethers": "^5.4.0"
   }
 }
