@@ -6,6 +6,11 @@ from collections import defaultdict
 from pathlib import Path
 import datetime
 
+def strip_0x_from_address(address):
+    if address[:2] == "0x":
+        address = address[2:]
+    return address
+
 def save_dataframe(df, out_directory, out_file):
     out_directory = Path(out_directory)
     out_directory.mkdir(parents=True, exist_ok=True)
@@ -36,6 +41,7 @@ def timestamp_to_simple_iso(timestamp, shouldStripTime):
 class UserData:
     def __init__(self):
         self.debt_timeline = dict()
+        self.collateral_timeline = dict()
     
     def add_borrow(self, asset, amount, timestamp):
         if asset not in self.debt_timeline:
@@ -52,9 +58,20 @@ class UserData:
             self.debt_timeline[debt_asset] = []
         self.debt_timeline[debt_asset].append(["liquidation", debt_to_cover, str(timestamp)])
 
+    def add_deposit(self, asset, amount, timestamp):
+        if asset not in self.collateral_timeline:
+            self.collateral_timeline[asset] = []
+        self.collateral_timeline[asset].append(["deposit", amount, str(timestamp)])
+
+    def add_withdraw(self, asset, amount, timestamp):
+        if asset not in self.collateral_timeline:
+            self.collateral_timeline[asset] = []
+        self.collateral_timeline[asset].append(["withdraw", amount, str(timestamp)])
+
     def to_json(self):
         data = dict()
         data["debt_timeline"] = self.debt_timeline
+        data["collateral_timeline"] = self.collateral_timeline
         return json.dumps(data)
 
 
@@ -162,7 +179,7 @@ def main(args):
 
             amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
             timestamp = row["timestamp"]
-            user = input_decoded["inputs"][4] #onBehalfOf
+            user = strip_0x_from_address(input_decoded["inputs"][4]) #onBehalfOf
             if user not in user_data:
                 user_data[user] = UserData()
             user_data[user].add_borrow(asset, amount, timestamp)
@@ -171,7 +188,8 @@ def main(args):
             asset_address = input_decoded["inputs"][0]
             asset = assetAddresses.get(asset_address, asset_address) 
             amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
-            user = input_decoded["inputs"][3] #onBehalfOf
+            timestamp = row["timestamp"]
+            user = strip_0x_from_address(input_decoded["inputs"][3]) #onBehalfOf
             if user not in user_data:
                 user_data[user] = UserData()
             user_data[user].add_repay(asset, amount, timestamp)
@@ -180,10 +198,32 @@ def main(args):
             debt_asset_address = input_decoded["inputs"][1]
             debt_asset = assetAddresses.get(debt_asset_address, debt_asset_address) 
             debt_to_cover = convert_hexunit256_to_int(input_decoded["inputs"][3])
-            user = input_decoded["inputs"][2] 
+            timestamp = row["timestamp"]
+            user = strip_0x_from_address(input_decoded["inputs"][2]) 
             if user not in user_data:
                 user_data[user] = UserData()
             user_data[user].add_liquidation_victim(debt_asset, debt_to_cover, timestamp)
+        
+        # make collateral timeline
+        if input_decoded["method"] == "deposit" and row["isError"] == 0:
+            asset_address = input_decoded["inputs"][0]
+            asset = assetAddresses.get(asset_address, asset_address) 
+            amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+            timestamp = row["timestamp"]
+            user = strip_0x_from_address(input_decoded["inputs"][2]) #onBehalfOf
+            if user not in user_data:
+                user_data[user] = UserData()
+            user_data[user].add_deposit(asset, amount, timestamp)
+
+        if input_decoded["method"] == "withdraw" and row["isError"] == 0:
+            asset_address = input_decoded["inputs"][0]
+            asset = assetAddresses.get(asset_address, asset_address) 
+            amount = convert_hexunit256_to_int(input_decoded["inputs"][1])
+            timestamp = row["timestamp"]
+            user = strip_0x_from_address(row["from"])
+            if user not in user_data:
+                user_data[user] = UserData()
+            user_data[user].add_withdraw(asset, amount, timestamp)
 
     # group liquidated asset pairs
     liquidated_pairs_grouped =  defaultdict(int)
@@ -201,8 +241,8 @@ def main(args):
     loans_with_no_problems = defaultdict(int)
     loans_with_no_problems_open = defaultdict(int)
 
-    for user, user_data in user_data.items():
-        for asset, events in user_data.debt_timeline.items():
+    for user, data in user_data.items():
+        for asset, events in data.debt_timeline.items():
             # determine loan
             debt = 0
             liquidations = 0
@@ -271,7 +311,9 @@ def main(args):
     with open(output_file, 'w') as fp:
         json.dump(results, fp, indent=4)
 
-
+    #with open('readme.txt', 'w') as f:
+    #    for user, data in user_data.items():
+    #        f.write("{"+user+"}" + data.to_json())
 
 if __name__ == '__main__':
     parser = ArgumentParser()
