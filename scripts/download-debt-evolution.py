@@ -18,9 +18,9 @@ def get_historical_tvl():
 
     data = []
     for item in d:
-        data.append([item["timestamp"],item["tvlUSD"], item["tvlETH"]])
+        data.append([item["timestamp"],item["tvlUSD"],])
 
-    df = pd.DataFrame(data, columns=['timestamp', 'tvlUSD', 'tvlETH'])
+    df = pd.DataFrame(data, columns=['timestamp', 'tvlUSD'])
     return df
 
 def main(args):
