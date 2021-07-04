@@ -23,9 +23,10 @@ def main():
     ax = sns.lineplot(data=df, x="time", y="tvl_usd", ax=ax).set_title('Total Value Locked (USD)')
     ax = plt.gca()
     xticks = ax.get_xticks()
-    ax.set_xticklabels([pd.to_datetime(tm, unit='s').strftime('%Y-%m-%d') for tm in xticks],rotation=50)
+    ax.set_xticklabels([pd.to_datetime(tm, unit='s').strftime('%Y-%m-%d') for tm in xticks],rotation=0)
     ax.tick_params(labelsize=10)
     ax.set_ylabel('')
+    ax.set_xlabel('')
     ax.yaxis.set_major_formatter('{x:1.0f}B') 
 
     ax.figure.savefig('../reports/tvl-chart.png', bbox_inches="tight")
