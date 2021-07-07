@@ -3,13 +3,13 @@ from urllib import parse
 import json
 import requests
 import pandas as pd
+import utils.globals as globals
 
 BASE_URL = 'https://data-api.defipulse.com/api/v1/'
-API_KEY = '7899c5701d536f8525c8ae2122c838216d7386e7f9262e842dd80f043938'    # ATTENTION! Defipulse has limits on it's API so be careful.
 
 def get_historical_tvl():
     url = BASE_URL + "defipulse/api/GetHistory?" +  parse.urlencode({
-        'api-key' : API_KEY, 
+        'api-key' : globals.DEFIPULSE_API_KEY, 
         'project' : 'aave', 
         'period' : 'all',
     })

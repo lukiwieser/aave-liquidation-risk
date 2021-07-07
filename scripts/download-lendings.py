@@ -3,9 +3,9 @@ from urllib import parse
 import json
 import requests
 import pandas as pd
+import utils.globals as globals
 
 BASE_URL = 'https://api.etherscan.io/api'
-API_KEY = 'S7XRYA2VNPPU4ZWPNWGSJT2G7F33NSTNP7'
 ADDRESS = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
 
 def get_address_actions():
@@ -14,7 +14,15 @@ def get_address_actions():
     data = []
 
     while True:
-        url = BASE_URL + '?' + parse.urlencode({'module' : 'account', 'action' : 'txlist', 'address' : ADDRESS, 'sort' : 'asc', 'startblock' : currentblock, 'endblock' : 999999999, 'apikey' : API_KEY})
+        url = BASE_URL + '?' + parse.urlencode({
+            'module' : 'account', 
+            'action' : 'txlist', 
+            'address' : ADDRESS, 
+            'sort' : 'asc', 
+            'startblock' : currentblock, 
+            'endblock' : 999999999, 
+            'apikey' : globals.ETHERSCAN_API_KEY
+        })
         r = requests.get(url)
         d = json.loads(r.text)
 

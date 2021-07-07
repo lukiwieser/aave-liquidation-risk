@@ -4,9 +4,9 @@ import requests
 from urllib import parse
 from pathlib import Path
 import dateutil.parser as dp
+import utils.globals as globals
 
 BASE_URL = "https://rest.coinapi.io/v1"
-API_KEY = "A098ECCE-FC1E-4594-9C68-9ADF339D40AD"
 
 # saves a pandas dataframe as csv, creates directory if not existent
 def save_dataframe(df, out_directory, out_file):
@@ -53,7 +53,7 @@ def main():
         'period_id' : '1DAY',
         'time_start' : '2020-12-01T00:00:00',       # 01 Dec 2020 is start of AAVE V2 protocol 
         'limit' : '200',                            # 200 equals 2 requests
-        'apikey' : API_KEY
+        'apikey' : globals.COINAPI_API_KEY
     })
 
     for i, asset in enumerate(assets):

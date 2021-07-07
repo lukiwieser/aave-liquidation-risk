@@ -2,6 +2,9 @@ data/parsed
 data/raw
 reports
 node_modules
+*.env
+
+__pycache__
 
 
 
