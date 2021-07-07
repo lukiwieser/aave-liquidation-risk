@@ -4,7 +4,7 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
-const decoder = new InputDataDecoder("../data/abi-weth-gateway.json");
+const decoder = new InputDataDecoder("../data/raw/abi-weth-gateway.json");
 
 const data = []
 count = 0;
