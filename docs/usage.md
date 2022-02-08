@@ -1,5 +1,7 @@
 # AAVE Liquidation Risk - Usage
 
+🔗[To main Readme](../README.md)
+
 ## Installation
 
 This project requires [Node](https://nodejs.org/en/) and [Python 3](https://www.python.org/downloads/) to be installed on your machine.
