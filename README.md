@@ -1,9 +1,9 @@
 # AAVE Liquidation Risk
 
-This project aims to analyze risks associated with borrowing assets on the [AAVE protocol](https://aave.com).
-Due to the protocols nature, there is always a risk of one’s collateral to be liquidated.
+This project aims to analyze risks associated with borrowing assets on the [AAVE V2 protocol](https://aave.com).
 
-This project was created from students as part of a lecture at the [Technical Univeristy of Vienna](https://www.tuwien.at).
+When borrowing an asset on AAVE, the user must deposit a certain amount of collateral.
+However, there is always a sligth risk that this collateral gets liquidated.
 
 ## Installation
 
@@ -33,3 +33,7 @@ This projectas a pipeline with the following steps:
 2. *Parse*: Some of the raw data will be parsed, to speed up the time.
 3. *Evaluate*: Evaluates the data and creates results (= heart of the project)
 4. *Visualize*: Creates plots of the result data
+
+## Credits
+
+This project was created by two students as part of a lecture at the [Technical Univeristy of Vienna](https://www.tuwien.at).
