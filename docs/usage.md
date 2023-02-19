@@ -25,14 +25,14 @@ You also have to create a `.env` file at the root of the project. This file is f
 Important folders:
 
 - *data/raw*: contains the raw, downloaded data
-- *data/parsed*: contains the prased data
+- *data/parsed*: contains the parsed data
 - *reports*: contains the final results  
 
 ## Pipeline
 
-This projectas a pipeline with the following steps:
+This project has a pipeline with the following steps:
 
-1. *Download*: This steps download all the require raw data
+1. *Download*: These steps download all the required raw data
 2. *Parse*: Some of the raw data will be parsed, to speed up the time.
 3. *Evaluate*: Evaluates the data and creates results (= heart of the project)
 4. *Visualize*: Creates plots of the result data
