@@ -13,4 +13,4 @@ For reproducing our results or using the project code visit the [usage section](
 
 ## Credits
 
-This project was created by two students as part of a lecture at the [Technical University of Vienna](https://www.tuwien.at).
+This project was created by two students as part of a lecture at the *Vienna University of Technology*.
