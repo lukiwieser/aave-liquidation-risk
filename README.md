@@ -23,7 +23,7 @@ To reproduce our results, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
-   *Note:* We additionally use Node, since it easier to handle ABI related things with the libraries available in the node ecosystem.
+   *Note:* We additionally use Node, since it is easier to handle ABI related things with the libraries available in the node ecosystem.
 
 2. **Set API Keys:**
 
@@ -32,7 +32,7 @@ To reproduce our results, follow these steps:
    - [Defipulse](https://data.defipulse.com)
    - [CoinAPI](https://docs.coinapi.io)
    
-   Next create a `.env` file at the project's root.
+   Next, create a `.env` file at the project's root.
    The content of the file should look like `.env.sample` but with your API Keys instead of the `xxxx`.
 
 3. **Run the Scripts:**
@@ -51,7 +51,7 @@ To reproduce our results, follow these steps:
 
    The results from the scripts will be saved in the following folders:
    - `data/raw`: Contains raw downloaded data.
-   - `data/parsed`:Contains the parsed data.
+   - `data/parsed`: Contains the parsed data.
    - `reports`: Contains the final results.
 
 
