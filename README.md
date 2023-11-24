@@ -33,14 +33,14 @@ To reproduce our results, follow these steps:
    - [CoinAPI](https://docs.coinapi.io)
    
    Next, create a `.env` file at the project's root.
-   The content of the file should look like `.env.sample` but with your API Keys instead of the `xxxx`.
+   The content of the file should look like `.env.sample` but with your API keys instead of the `xxxx`.
 
 3. **Run the Scripts:**
 
    The code in the `/scripts` folder follows a pipeline with 4 phases:
-   1. Download: Fetches necessary raw data.
+   1. Download: Fetch necessary raw data.
    2. Parse: Speeds up processing by parsing some of the raw data.
-   3. Evaluate: Analyzes data, generating project results.
+   3. Evaluate: Analyzes data, generating project results (= heart of the project).
    4. Visualize: Creates plots based on result data.
    
    Simply run the scripts sequentially, starting with "download" scripts.
