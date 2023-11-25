@@ -1,9 +1,13 @@
 # AAVE Liquidation Risk
 
-This project aims to analyze risks associated with borrowing assets on the [AAVE V2 protocol](https://aave.com).
+This project aims to analyze risks associated with borrowing cryptocurrencies on the [AAVE V2 protocol](https://aave.com).
 
-When borrowing an asset on AAVE, the user must deposit a certain amount of collateral.
-However, there is always a slight risk that this collateral gets liquidated.
+AAVE is a leading decentralized finance protocol running on the Ethereum blockchain (as of 2021). 
+It is like a digital bank where you can deposit your cryptocurrencies and earn interest,
+or borrow different cryptocurrencies.
+
+When borrowing a cryptocurrency, you must first deposit a certain amount of another cryptocurrency as collateral.
+Due to price fluctuations of cryptocurrencies, there is a slight risk that this collateral gets liquidated.
 
 ## Findings
 
