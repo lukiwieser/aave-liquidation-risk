@@ -15,18 +15,17 @@ Due to price fluctuations of cryptocurrencies, there is a slight risk that this 
 
 Here is a short overview of the datasets used in this project:
 * AAVE Transactions:
-  * 235,000 transactions 
-  * Smart contracts: Lending Pool V2 (`0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9`) and WETH Gateway (`0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04`)
-  * source: Etherscan API
+  * 235,000 transactions from the smart contracts Lending Pool V2 (`0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9`) and WETH Gateway (`0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04`)
+  * Source: Etherscan API
 * AAVE ABI:
-  * for decoding contract methods
-  * source: npm package @aave/protocol-v2 and Etherscan API
+  * For decoding contract methods
+  * Source: npm package @aave/protocol-v2 and Etherscan API
 * Price History:
-  * for exploring correlation with asset prices
-  * source: Coinapi API
+  * For exploring correlation with asset prices
+  * Source: Coinapi API
 * AAVE TVL History:
-  * for general data exploration
-  * source: Defipulse API
+  * For general data exploration
+  * Source: Defipulse API
 
 ### Data Analysis
 
@@ -39,7 +38,7 @@ This can be seen by the field `input` below:
 
 ![transaction-data.png](docs/transaction-data.png)
 
-If we decode this input with the AAVE V2 ABI, and count the number of each event, we get the following result.
+Decoding this input with the AAVE V2 ABI, and counting the number of events yields the following result:
 
 | Contract Event  | Count |
 |-----------------|------:|
@@ -64,10 +63,7 @@ Next lets look at individual loans.
 | closed          | 13565 |
 | liquidated      |   159 |
 
-
-There is a similar number of open and closed loans, indicating a rather young protocol. 
-The number of liquidated loans is still small.
-By looking at the share of liquidated loans `0.63%` we can calculate a very basic estimate for the liquidation risk.
+The number of open and closed loans is similar, suggesting a relatively young protocol. The number of liquidated loans is still small. The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidation risk.
 
 #### Loans per Asset Pair
 
@@ -76,6 +72,8 @@ An asset pair is composed of the cryptocurrencies as collateral and of the loan 
 
 AAVE does not give us this information, thus we use a simple heuristic: 
 If a user has an open loan of asset x, we look at what asset y they have during that time as collateral.
+
+Additionally, we grouped all stable coins that represent USD together (e.g. DAI, USDC).
 
 ![loans-without-liquidations.](docs/loans-without-liquidations.png)
 Here we see the number of loans without liquidations for certain asset pairs.
