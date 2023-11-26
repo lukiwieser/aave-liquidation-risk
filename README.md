@@ -11,6 +11,102 @@ Due to price fluctuations of cryptocurrencies, there is a slight risk that this 
 
 ## Findings
 
+### Data Gathering
+
+Here is a short overview of the datasets used in this project:
+* AAVE Transactions:
+  * 235,000 transactions 
+  * Smart contracts: Lending Pool V2 (`0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9`) and WETH Gateway (`0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04`)
+  * source: Etherscan API
+* AAVE ABI:
+  * for decoding contract methods
+  * source: npm package @aave/protocol-v2 and Etherscan API
+* Price History:
+  * for exploring correlation with asset prices
+  * source: Coinapi API
+* AAVE TVL History:
+  * for general data exploration
+  * source: Defipulse API
+
+### Data Analysis
+
+#### Contract Events
+
+First, let's take a look at the activities happening on AAVE.
+
+The methods that each transaction invokes on the AAVE smart contract are encoded. 
+This can be seen by the field `input` below:
+
+![transaction-data.png](docs/transaction-data.png)
+
+If we decode this input with the AAVE V2 ABI, and count the number of each event, we get the following result.
+
+| Contract Event  | Count |
+|-----------------|------:|
+| deposit         | 93695 |
+| withdraw        | 47445 |
+| borrow          | 62417 |
+| repay           | 29392 |
+| liquidationCall |   249 |
+
+Liquidations only make up a small number of all the interactions.
+There are less repays than borrows.
+This indicates that users borrow multiple times, and then repay these cryptocurrencies in one transaction.
+To get more information about borrows & repays, we have to look at individual loans.
+
+#### Loans
+
+Next lets look at individual loans.
+
+| Loan            | Count |
+|-----------------|------:|
+| open            | 11644 |
+| closed          | 13565 |
+| liquidated      |   159 |
+
+
+There is a similar number of open and closed loans, indicating a rather young protocol. 
+The number of liquidated loans is still small.
+By looking at the share of liquidated loans `0.63%` we can calculate a very basic estimate for the liquidation risk.
+
+#### Loans per Asset Pair
+
+Next, we try to determine if certain asset pairs are more prone to liquidations than others.
+An asset pair is composed of the cryptocurrencies as collateral and of the loan e.g. (ETH-USD).
+
+AAVE does not give us this information, thus we use a simple heuristic: 
+If a user has an open loan of asset x, we look at what asset y they have during that time as collateral.
+
+![loans-without-liquidations.](docs/loans-without-liquidations.png)
+Here we see the number of loans without liquidations for certain asset pairs.
+Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
+
+![loans-with-liquidations](docs/loans-with-liquidations.png)
+Here we see the share of loans with liquidations. We also call this *asset pair risk*.
+Loans with ETH-USD which were the most popular overall, also have one of the highest percentages of loans with liquidations.
+While loans with USD-USD, which are also very popular, have a quite low share of being liquidated.
+ 
+A possible reason could be that loans that involve two stable coins like USD-USD are less prone to liquidations due to less changes in prices.
+
+#### Correlation of liquidations and asset price
+
+Next, lets look if liquidations correlate when the price of a cryptocurrency changes.
+Due to time constrains, we just look at the price of ETH.
+
+![correlation-liquidations-and-price](docs/correlation-liquidations-and-price.png)
+
+The price of ETH is shown in the upper chart, while a scatterplot of the liquidations is shown below.
+There seems to be a large clusters of liquidations occurring when the price drops are strong, indicating a correlation.
+
+### Summary
+
+Liquidations make up a relatively small number of all interactions on the AAVE V2 protocol.
+We determined about 25k loans on the protocol, of which half was paid back, and the other half still open.
+
+Some asset pairs (collateral-dept) are more popular than others, and some are more risky than others.
+
+There seems to be a correlation of liquidations and the price of cryptocurrencies, especially when the price drops stringly.
+
 ## Reproduce
 
 To reproduce our results, follow these steps:
