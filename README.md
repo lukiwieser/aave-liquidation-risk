@@ -57,13 +57,25 @@ To get more information about borrows & repays, we have to look at individual lo
 
 Next lets look at individual loans.
 
+We can estimate the loans by sequentially adding up the borrowed and subtracting the repaid amount.
+If the amount reaches zero, we know the loan is fully repaid aka *closed*.
+Else the loan is still *open*.
+If at any time a liquidation occurs, we consider the loan as *liquidated*, and not open or closed.
+
+![loan-heuristic](docs/loan-heuristic.svg)
+
+We do this for each asset of each user (aka address), which yields the following: 
+
 | Loan            | Count |
 |-----------------|------:|
 | open            | 11644 |
 | closed          | 13565 |
 | liquidated      |   159 |
 
-The number of open and closed loans is similar, suggesting a relatively young protocol. The number of liquidated loans is still small. The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidation risk.
+We estimated 25368 loans in total.
+The number of open and closed loans is similar, suggesting a relatively young protocol. 
+The number of liquidated loans is still small. 
+The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidation risk.
 
 #### Loans per Asset Pair
 
