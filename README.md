@@ -62,7 +62,7 @@ If the amount reaches zero, we know the loan is fully repaid aka *closed*.
 Else the loan is still *open*.
 If at any time a liquidation occurs, we consider the loan as *liquidated*, and not open or closed.
 
-![loan-heuristic](docs/loan-heuristic.svg)
+![loan-heuristic](docs/loan-heuristic.png)
 
 We do this for each asset of each user (aka address), which yields the following: 
 
