@@ -29,7 +29,7 @@ Users only interact with the *Lending Pool V2* smart contract:
   * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
   * This mechanism ensures that Aave does not lose money.
 
-For more details, take a look at the [Aave V1 Whitepaper](https://github.com/Aave/Aave-protocol/blob/master/docs/Aave_Protocol_Whitepaper_v1_0.pdf) and [Aave V2 Whitepaper](https://github.com/Aave/protocol-v2/blob/master/Aave-v2-whitepaper.pdf).
+For more details, take a look at the [Aave V1 Whitepaper](https://github.com/Aave/Aave-protocol/blob/master/docs/Aave_Protocol_Whitepaper_v1_0.pdf) and [Aave V2 Whitepaper](https://github.com/aave/protocol-v2/blob/master/aave-v2-whitepaper.pdf).
 
 ### Data Gathering
 
