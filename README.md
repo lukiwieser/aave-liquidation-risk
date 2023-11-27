@@ -1,13 +1,10 @@
 # Aave Liquidation Risk
 
-This project aims to analyze risks associated with borrowing cryptocurrencies on the [Aave V2 protocol](https://Aave.com).
+Exploring interaction patterns and risks associated with borrowing cryptocurrencies on the [Aave V2 protocol](https://Aave.com).
 
 Aave is a leading decentralized finance protocol running on the Ethereum blockchain (as of 2021). 
 It is like a digital bank where you can deposit your cryptocurrencies and earn interest,
 or borrow different cryptocurrencies.
-
-When borrowing a cryptocurrency, you must first deposit a certain amount of another cryptocurrency as collateral.
-Due to price fluctuations of cryptocurrencies, there is a slight risk that this collateral gets liquidated.
 
 ## Findings
 
@@ -50,14 +47,16 @@ Here is a short overview of the datasets used in this project:
   * For general data exploration
   * Source: Defipulse API
 
+The analysis covers data from December 1, 2020, to June 28, 2021.
+
 ### Data Analysis
 
 #### Contract Events
 
-First, let's take a look at the activities happening on Aave.
+First, let's take a look at the activities (contract events) happening on Aave.
 
-The methods that each transaction invokes on the Aave smart contract are encoded. 
-This can be seen by the field `input` below:
+For this, we take the transactions on the Ethereum blockchain involving the Aave smart contract.
+The specific method that each transaction triggers are encoded, as can be seen by the field `input` below: 
 
 ![transaction-data.png](docs/transaction-data.png)
 
@@ -116,7 +115,9 @@ Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
 
 ![loans-with-liquidations](docs/loans-with-liquidations.png)
 Here we see the share of loans with liquidations. We also call this *asset pair risk*.
-Loans with ETH-USD which were the most popular overall, also have one of the highest percentages of loans with liquidations.
+Loans with ETH-USD which were the most popular overall, 
+also have one of the highest percentages of loans with liquidations (ca. 3.5%),
+that is about 1 in 28 loans.
 While loans with USD-USD, which are also very popular, have a quite low share of being liquidated.
  
 A possible reason could be that loans that involve two stable coins like USD-USD are less prone to liquidation due to fewer changes in prices.
@@ -133,12 +134,13 @@ There seem to be large clusters of liquidations occurring when the price drops a
 
 ### Summary
 
-Liquidations make up a relatively small number of all interactions on the Aave V2 protocol.
-We determined about 25k loans on the protocol, of which half was paid back, and the other half still open.
+We determined about 25k loans on the Aave V2 protocol.
+About half of the loans are paid back, and the other half are still open.
+Liquidations make up a relatively small number of all loans.
 
-Some asset pairs (collateral-dept) are more popular than others, and some are more risky than others.
+Some combinations of dept & collateral assets (asset pairs) are more popular than others, and some are more risky than others.
 
-There seems to be a correlation between liquidations and the price of cryptocurrencies, especially when the price drops strongly.
+There seems to be a correlation between liquidations and the price of Ethereum, especially when the price drops strongly.
 
 There is lots of potential for further research.
 Exploring interactions on Aave in more depth, such as borrowing behavior, 
