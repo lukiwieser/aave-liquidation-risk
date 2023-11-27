@@ -188,6 +188,17 @@ To reproduce our results, follow these steps:
    - `reports`: Contains the final results.
 
 
+## Lessons Learned
+
+Here are some key takeaways from our project:
+
+- Heuristic help! (sometimes the data you have is not enough)
+- Decentralized finance is a complex field (involving intertwined smart contracts and lots of financial maths)
+- There is much to learn with Data Science (how to approach the problem, best practices for data exploration/understanding, 
+how to structure the code, validity of results, etc.)
+- *Note:* In hindsight, this might seem obvious, and jupyter notebooks would have been good, but keep in mind that this was our first data science project.
+
+
 ## Credits
 
 This project was created by two students as part of a lecture at the *Vienna University of Technology*.
