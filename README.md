@@ -11,6 +11,26 @@ Due to price fluctuations of cryptocurrencies, there is a slight risk that this 
 
 ## Findings
 
+### How AAVE works
+
+The AAVE V2 protocol consists of multiple smart contracts built on the Ethereum blockchain.
+Users only interact with the *Lending Pool V2* smart contract:
+* Depositing:
+  * Users can `deposit` a cryptocurrency and earn interest. 
+  * They can `withdraw` their deposited cryptocurrencies at any time.
+* Borrowing:
+  * Users can also `borrow` cryptocurrencies.
+  * Before borrowing, they must deposit a certain amount as collateral.
+    The exact amount depends on the cryptocurrency.
+    This ensures that users do not act maliciously.
+  * They can `repay` part of the borrowed assets at any time.
+* Liquidations:
+  * Due to price changes in the deposited and borrowed cryptocurrencies of users, it might happen that they have not enough collateral deposited.
+  * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
+  * This mechanism ensures that AAVE does not lose money.
+
+For more details, take a look at the [AAVE V1 Whitepaper](https://github.com/aave/aave-protocol/blob/master/docs/Aave_Protocol_Whitepaper_v1_0.pdf) and [AAVE V2 Whitepaper](https://github.com/aave/protocol-v2/blob/master/aave-v2-whitepaper.pdf).
+
 ### Data Gathering
 
 Here is a short overview of the datasets used in this project:
