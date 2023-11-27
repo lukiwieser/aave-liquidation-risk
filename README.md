@@ -22,7 +22,7 @@ Users only interact with the *Lending Pool V2* smart contract:
     This ensures that users do not act maliciously.
   * They can `repay` part of the borrowed assets any time.
 * Liquidations:
-  * Due to price changes in the deposited and borrowed cryptocurrencies of users, it might happen that they do have not enough collateral deposited.
+  * Due to price changes of the deposited and borrowed cryptocurrencies, it might happen that they do not have enough collateral deposited.
   * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
   * This mechanism ensures that Aave does not lose money.
 
@@ -111,6 +111,7 @@ Additionally, we grouped all stablecoins that represent USD together (e.g. DAI, 
 
 ![loans-without-liquidations.](docs/loans-without-liquidations.png)
 Here we see the number of loans without liquidations for certain asset pairs.
+They seem to follow the power law, characterized by a few highly popular asset pairs and numerous less popular ones.
 Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
 
 ![loans-with-liquidations](docs/loans-with-liquidations.png)
@@ -129,7 +130,7 @@ Due to time constraints, we just look at the price of ETH.
 
 ![correlation-liquidations-and-price](docs/correlation-liquidations-and-price.png)
 
-The price of ETH is shown in the upper chart, while a scatterplot of the liquidations is shown below.
+The price of Ethereum is shown in the upper chart, while a scatterplot of the liquidations is shown below.
 There seem to be large clusters of liquidations occurring when the price drops are strong, indicating a correlation.
 
 ### Summary
@@ -137,9 +138,7 @@ There seem to be large clusters of liquidations occurring when the price drops a
 We determined about 25k loans on the Aave V2 protocol.
 About half of the loans are paid back, and the other half are still open.
 Liquidations make up a relatively small number of all loans.
-
 Some combinations of dept & collateral assets (asset pairs) are more popular than others, and some are more risky than others.
-
 There seems to be a correlation between liquidations and the price of Ethereum, especially when the price drops strongly.
 
 There is lots of potential for further research.
@@ -204,7 +203,7 @@ Here are some key takeaways from our project:
 - Decentralized finance is a complex field (involving intertwined smart contracts and lots of financial maths)
 - There is much to learn with Data Science (how to approach the problem, best practices for data exploration/understanding, 
 how to structure the code, validity of results, etc.)
-- *Note:* In hindsight, this might seem obvious, and jupyter notebooks would have been good, but keep in mind that this was our first data science project.
+- *Note:* In hindsight, this might seem obvious, and using jupyter notebooks would have been a good idea, but keep in mind that this was our first data science project.
 
 
 ## Credits
