@@ -140,6 +140,12 @@ Some asset pairs (collateral-dept) are more popular than others, and some are mo
 
 There seems to be a correlation between liquidations and the price of cryptocurrencies, especially when the price drops strongly.
 
+There is lots of potential for further research.
+Exploring interactions on Aave in more depth, such as borrowing behavior, 
+or including more data like the duration or number of loans in the analysis.
+Additionally, it could be investigated if other lending protocols like Compound or Maker yield similar results.
+
+
 ## Reproduce
 
 To reproduce our results, follow these steps:
