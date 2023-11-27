@@ -1,8 +1,8 @@
-# AAVE Liquidation Risk
+# Aave Liquidation Risk
 
-This project aims to analyze risks associated with borrowing cryptocurrencies on the [AAVE V2 protocol](https://aave.com).
+This project aims to analyze risks associated with borrowing cryptocurrencies on the [Aave V2 protocol](https://Aave.com).
 
-AAVE is a leading decentralized finance protocol running on the Ethereum blockchain (as of 2021). 
+Aave is a leading decentralized finance protocol running on the Ethereum blockchain (as of 2021). 
 It is like a digital bank where you can deposit your cryptocurrencies and earn interest,
 or borrow different cryptocurrencies.
 
@@ -11,9 +11,9 @@ Due to price fluctuations of cryptocurrencies, there is a slight risk that this 
 
 ## Findings
 
-### How AAVE works
+### How Aave works
 
-The AAVE V2 protocol consists of multiple smart contracts built on the Ethereum blockchain.
+The Aave V2 protocol consists of multiple smart contracts built on the Ethereum blockchain.
 Users only interact with the *Lending Pool V2* smart contract:
 * Depositing:
   * Users can `deposit` a cryptocurrency and earn interest. 
@@ -23,27 +23,30 @@ Users only interact with the *Lending Pool V2* smart contract:
   * Before borrowing, they must deposit a certain amount as collateral.
     The exact amount depends on the cryptocurrency.
     This ensures that users do not act maliciously.
-  * They can `repay` part of the borrowed assets at any time.
+  * They can `repay` part of the borrowed assets any time.
 * Liquidations:
-  * Due to price changes in the deposited and borrowed cryptocurrencies of users, it might happen that they have not enough collateral deposited.
+  * Due to price changes in the deposited and borrowed cryptocurrencies of users, it might happen that they do have not enough collateral deposited.
   * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
-  * This mechanism ensures that AAVE does not lose money.
+  * This mechanism ensures that Aave does not lose money.
 
-For more details, take a look at the [AAVE V1 Whitepaper](https://github.com/aave/aave-protocol/blob/master/docs/Aave_Protocol_Whitepaper_v1_0.pdf) and [AAVE V2 Whitepaper](https://github.com/aave/protocol-v2/blob/master/aave-v2-whitepaper.pdf).
+For more details, take a look at the [Aave V1 Whitepaper](https://github.com/Aave/Aave-protocol/blob/master/docs/Aave_Protocol_Whitepaper_v1_0.pdf) and [Aave V2 Whitepaper](https://github.com/Aave/protocol-v2/blob/master/Aave-v2-whitepaper.pdf).
 
 ### Data Gathering
 
 Here is a short overview of the datasets used in this project:
-* AAVE Transactions:
-  * 235,000 transactions from the smart contracts Lending Pool V2 (`0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9`) and WETH Gateway (`0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04`)
+* Aave Transactions:
+  * 235,000 transactions from the Ethereum blockchain 
+  * Smart contracts:
+    * Lending Pool V2: `0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9` 
+    * WETH Gateway: `0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04`
   * Source: Etherscan API
-* AAVE ABI:
+* Aave ABI:
   * For decoding contract methods
-  * Source: npm package @aave/protocol-v2 and Etherscan API
+  * Source: npm package @Aave/protocol-v2 and Etherscan API
 * Price History:
   * For exploring correlation with asset prices
   * Source: Coinapi API
-* AAVE TVL History:
+* Aave TVL History:
   * For general data exploration
   * Source: Defipulse API
 
@@ -51,14 +54,14 @@ Here is a short overview of the datasets used in this project:
 
 #### Contract Events
 
-First, let's take a look at the activities happening on AAVE.
+First, let's take a look at the activities happening on Aave.
 
-The methods that each transaction invokes on the AAVE smart contract are encoded. 
+The methods that each transaction invokes on the Aave smart contract are encoded. 
 This can be seen by the field `input` below:
 
 ![transaction-data.png](docs/transaction-data.png)
 
-Decoding this input with the AAVE V2 ABI, and counting the number of events yields the following result:
+Decoding this input with the Aave V2 ABI, and counting the number of events yields the following result:
 
 | Contract Event  | Count |
 |-----------------|------:|
@@ -69,13 +72,13 @@ Decoding this input with the AAVE V2 ABI, and counting the number of events yiel
 | liquidationCall |   249 |
 
 Liquidations only make up a small number of all the interactions.
-There are less repays than borrows.
+There are fewer repays than borrows.
 This indicates that users borrow multiple times, and then repay these cryptocurrencies in one transaction.
 To get more information about borrows & repays, we have to look at individual loans.
 
 #### Loans
 
-Next lets look at individual loans.
+Next, let's look at individual loans.
 
 We can estimate the loans by sequentially adding up the borrowed and subtracting the repaid amount.
 If the amount reaches zero, we know the loan is fully repaid aka *closed*.
@@ -102,10 +105,10 @@ The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidat
 Next, we try to determine if certain asset pairs are more prone to liquidations than others.
 An asset pair is composed of the cryptocurrencies as collateral and of the loan e.g. (ETH-USD).
 
-AAVE does not give us this information, thus we use a simple heuristic: 
+Aave does not give us this information, thus we use a simple heuristic: 
 If a user has an open loan of asset x, we look at what asset y they have during that time as collateral.
 
-Additionally, we grouped all stable coins that represent USD together (e.g. DAI, USDC).
+Additionally, we grouped all stablecoins that represent USD together (e.g. DAI, USDC).
 
 ![loans-without-liquidations.](docs/loans-without-liquidations.png)
 Here we see the number of loans without liquidations for certain asset pairs.
@@ -116,26 +119,26 @@ Here we see the share of loans with liquidations. We also call this *asset pair 
 Loans with ETH-USD which were the most popular overall, also have one of the highest percentages of loans with liquidations.
 While loans with USD-USD, which are also very popular, have a quite low share of being liquidated.
  
-A possible reason could be that loans that involve two stable coins like USD-USD are less prone to liquidations due to less changes in prices.
+A possible reason could be that loans that involve two stable coins like USD-USD are less prone to liquidation due to fewer changes in prices.
 
 #### Correlation of liquidations and asset price
 
-Next, lets look if liquidations correlate when the price of a cryptocurrency changes.
-Due to time constrains, we just look at the price of ETH.
+Next, let's look if liquidations correlate when the price of a cryptocurrency changes.
+Due to time constraints, we just look at the price of ETH.
 
 ![correlation-liquidations-and-price](docs/correlation-liquidations-and-price.png)
 
 The price of ETH is shown in the upper chart, while a scatterplot of the liquidations is shown below.
-There seems to be a large clusters of liquidations occurring when the price drops are strong, indicating a correlation.
+There seem to be large clusters of liquidations occurring when the price drops are strong, indicating a correlation.
 
 ### Summary
 
-Liquidations make up a relatively small number of all interactions on the AAVE V2 protocol.
+Liquidations make up a relatively small number of all interactions on the Aave V2 protocol.
 We determined about 25k loans on the protocol, of which half was paid back, and the other half still open.
 
 Some asset pairs (collateral-dept) are more popular than others, and some are more risky than others.
 
-There seems to be a correlation of liquidations and the price of cryptocurrencies, especially when the price drops stringly.
+There seems to be a correlation between liquidations and the price of cryptocurrencies, especially when the price drops strongly.
 
 ## Reproduce
 
