@@ -62,13 +62,13 @@ The specific method that each transaction triggers are encoded, as can be seen b
 
 Decoding this input with the Aave V2 ABI, and counting the number of events yields the following result:
 
-| Contract Event  | Count |
-|-----------------|------:|
-| deposit         | 93695 |
-| withdraw        | 47445 |
-| borrow          | 62417 |
-| repay           | 29392 |
-| liquidationCall |   249 |
+| Contract Event  |  Count |
+|-----------------|-------:|
+| deposit         | 93,695 |
+| withdraw        | 47,445 |
+| borrow          | 62,417 |
+| repay           | 29,392 |
+| liquidationCall |    249 |
 
 Liquidations only make up a small number of all the interactions.
 There are fewer repays than borrows.
@@ -88,13 +88,13 @@ If at any time a liquidation occurs, we consider the loan as *liquidated*, and n
 
 We do this for each asset of each user (aka address), which yields the following: 
 
-| Loan            | Count |
-|-----------------|------:|
-| open            | 11644 |
-| closed          | 13565 |
-| liquidated      |   159 |
+| Loan            |  Count |
+|-----------------|-------:|
+| open            | 11,644 |
+| closed          | 13,565 |
+| liquidated      |    159 |
 
-We estimated 25368 loans in total.
+We estimated 25,368 loans in total.
 The number of open and closed loans is similar, suggesting a relatively young protocol. 
 The number of liquidated loans is still small. 
 The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidation risk.
@@ -133,7 +133,7 @@ There seem to be large clusters of liquidations occurring when the price drops a
 
 ### Summary
 
-We determined about 25k loans on the Aave V2 protocol.
+We determined about 25,000 loans on the Aave V2 protocol.
 About half of the loans are paid back, and the other half are still open.
 Liquidations make up a relatively small number of all loans.
 Some combinations of dept & collateral assets (asset pairs) are more popular than others, and some are more risky than others.
