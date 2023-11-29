@@ -14,13 +14,13 @@ The Aave V2 protocol consists of multiple smart contracts built on the Ethereum 
 Users only interact with the *Lending Pool V2* smart contract:
 * Depositing:
   * Users can `deposit` a cryptocurrency and earn interest. 
-  * They can `withdraw` their deposited cryptocurrencies at any time.
+  * Users can `withdraw` their deposited cryptocurrencies at any time.
 * Borrowing:
-  * Users can also `borrow` cryptocurrencies.
+  * Users can also `borrow` cryptocurrencies, but have to pay interest.
   * Before borrowing, they must deposit a certain amount as collateral.
     The exact amount depends on the cryptocurrency.
-    This ensures that users do not act maliciously.
-  * They can `repay` part of the borrowed assets any time.
+    This ensures that users pay back and do not act maliciously.
+  * Users can `repay` part of the borrowed assets any time.
 * Liquidations:
   * Due to price changes of the deposited and borrowed cryptocurrencies, it might happen that they do not have enough collateral deposited.
   * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
@@ -55,7 +55,7 @@ The analysis covers data from December 1, 2020, to June 28, 2021.
 
 First, let's take a look at the activities (contract events) happening on Aave.
 
-For this, we take the transactions on the Ethereum blockchain involving the Aave smart contract.
+For this, we take the transactions on the Ethereum blockchain involving the Aave smart contracts.
 The specific method that each transaction triggers are encoded, as can be seen by the field `input` below: 
 
 ![transaction-data.png](docs/transaction-data.png)
@@ -105,8 +105,7 @@ Next, we try to determine if certain asset pairs are more prone to liquidations 
 An asset pair is composed of the cryptocurrencies as collateral and of the loan e.g. (ETH-USD).
 
 Aave does not give us this information, thus we use a simple heuristic: 
-If a user has an open loan of asset x, we look at what asset y they have during that time as collateral.
-
+If a user has a loan of asset x, we look at what assets y they have during that time as collateral.
 Additionally, we grouped all stablecoins that represent USD together (e.g. DAI, USDC).
 
 ![loans-without-liquidations.](docs/loans-without-liquidations.png)
@@ -117,11 +116,10 @@ Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
 ![loans-with-liquidations](docs/loans-with-liquidations.png)
 Here we see the share of loans with liquidations. We also call this *asset pair risk*.
 Loans with ETH-USD which were the most popular overall, 
-also have one of the highest percentages of loans with liquidations (ca. 3.5%),
-that is about 1 in 28 loans.
+also have one of the highest percentages of loans with liquidations, `~ 3.5%`,
+which is about 1 in 28 loans.
 While loans with USD-USD, which are also very popular, have a quite low share of being liquidated.
- 
-A possible reason could be that loans that involve two stable coins like USD-USD are less prone to liquidation due to fewer changes in prices.
+A possible reason for this trend could be that asset pairs with lower liquidations also have minimal price fluctuations (e.g. USD-USD).  
 
 #### Correlation of liquidations and asset price
 
@@ -199,7 +197,7 @@ To reproduce our results, follow these steps:
 
 Here are some key takeaways from our project:
 
-- Heuristic help! (sometimes the data you have is not enough)
+- Heuristics help! (sometimes the data you have is not enough)
 - Decentralized finance is a complex field (involving intertwined smart contracts and lots of financial maths)
 - There is much to learn with Data Science (how to approach the problem, best practices for data exploration/understanding, 
 how to structure the code, validity of results, etc.)
