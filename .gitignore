@@ -1,12 +1,22 @@
+# Environments
+*.env
+
+# Datasets & Output Data
 data/parsed
 data/raw
 reports
-node_modules
-*.env
 
+# Python
 __pycache__
 
+# Node
+node_modules
 
+# IDEs
+.vscode
+.idea
 
-
-
+# MacOS Files
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
