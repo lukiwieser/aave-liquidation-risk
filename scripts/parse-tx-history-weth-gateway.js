@@ -2,7 +2,7 @@ const InputDataDecoder = require('ethereum-input-data-decoder');
 const csv = require('csv-parser');
 const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
+const getDirName = require('path').dirname;
 
 const decoder = new InputDataDecoder("../data/raw/abi-weth-gateway.json");
 
@@ -16,9 +16,9 @@ fs.createReadStream('../data/raw/tx-history-weth-gateway.csv')
     const result = decoder.decodeData(row.input);
     row.input_decoded = JSON.stringify(result);
     data.push(row)
-    
+
     count++
-    if(count % 1000 === 0) console.log(count);
+    if(count % 10000 === 0) console.log(count);
   })
   .on('end', () => {
     console.log('CSV file successfully processed');
@@ -40,7 +40,11 @@ fs.createReadStream('../data/raw/tx-history-weth-gateway.csv')
       ]
     });
 
+    fs.mkdir(getDirName('../data/parsed/tx-history-weth-gateway.csv'), { recursive: true}, function (err) {
+        if (err) return cb(err);
+    });
+
     csvWriter.writeRecords(data).then(
-      ()=> console.log('The CSV file was written successfully')
+      ()=> console.log('CSV file successfully saved to data/parsed')
     );
   });
