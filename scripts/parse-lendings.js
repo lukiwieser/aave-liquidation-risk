@@ -4,12 +4,16 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const getDirName = require('path').dirname;
 
-const decoder = new InputDataDecoder("../data/raw/abi.json");
+const ABI = "../data/raw/abi.json";
+const PATH_INPUT_DATA = "../data/raw/tx-history-short.csv";
+const PATH_OUTPUT_DATA = "../data/parsed/tx-history-short.csv";
 
-const data = []
-count = 0;
+const decoder = new InputDataDecoder(ABI);
+const data = [];
+let count = 0;
 
-fs.createReadStream('../data/raw/tx-history-short.csv')
+console.log("Parsing transactions from '" + PATH_INPUT_DATA + "' ...")
+fs.createReadStream(PATH_INPUT_DATA)
   .pipe(csv())
   .on('data', (row) => {
     newRow = {...row}
@@ -24,7 +28,7 @@ fs.createReadStream('../data/raw/tx-history-short.csv')
     console.log('CSV file successfully processed');
 
     const csvWriter = createCsvWriter({
-      path: '../data/parsed/tx-history-short.csv',
+      path: PATH_OUTPUT_DATA,
       fieldDelimiter: ';',
       header: [
         {id: 'timestamp', title: 'timestamp'},
@@ -39,11 +43,11 @@ fs.createReadStream('../data/raw/tx-history-short.csv')
       ]
     });
 
-    fs.mkdir(getDirName('../data/parsed/tx-history.csv'), { recursive: true}, function (err) {
+    fs.mkdir(getDirName(PATH_OUTPUT_DATA), { recursive: true}, function (err) {
         if (err) return cb(err);
     });
 
     csvWriter.writeRecords(data).then(
-      ()=> console.log('CSV file successfully saved to data/parsed')
+      ()=> console.log("CSV file successfully saved to '" + PATH_OUTPUT_DATA + "'")
     );
   });
