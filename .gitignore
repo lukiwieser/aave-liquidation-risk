@@ -1,11 +1,13 @@
 # Environments
 *.env
 
-# Datasets & Output Data
+# Datasets
 data/parsed
 data/raw
-data/results
+
+# Output Data
 results/plots
+results/data
 
 # Python
 __pycache__

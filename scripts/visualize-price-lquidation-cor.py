@@ -8,7 +8,7 @@ import dateutil.parser as dp
 
 # Inputs
 PATH_PRICE_HISTORY = "../data/raw/price-history/BTC-USD.csv"
-PATH_LIQUIDATION_TIMELINE = '../data/results/liquidation_timeline.csv'
+PATH_LIQUIDATION_TIMELINE = '../results/data/liquidation_timeline.csv'
 ASSET_PAIR = "BTC/USD"
 # Outputs
 PATH_PLOT_CORRELATION = '../results/plots/liquidation-price-correlation.png'

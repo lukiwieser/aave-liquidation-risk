@@ -11,8 +11,8 @@ import os
 PATH_TX_HISTORY_LENDING_POOL_V2 = "../data/parsed/tx-history_lending-pool-v2.csv"
 PATH_TX_HISTORY_WETH_GATEWAY = "../data/parsed/tx-history_weth-gateway.csv"
 # Outputs
-PATH_RESULTS_SUMMARY = "../data/results/summary.json"
-PATH_LIQUIDATION_TIMELINE = "../data/results/liquidation_timeline.csv"
+PATH_RESULTS_SUMMARY = "../results/data/summary.json"
+PATH_LIQUIDATION_TIMELINE = "../results/data/liquidation_timeline.csv"
 
 LENDING_POOL_V2_ADDRESS = "7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
 

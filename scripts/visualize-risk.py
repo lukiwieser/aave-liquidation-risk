@@ -9,7 +9,7 @@ import dateutil.parser as dp
 import matplotlib.ticker as mtick
 
 # Inputs
-PATH_RESULTS_SUMMARY = "../data/results/summary.json"
+PATH_RESULTS_SUMMARY = "../results/data/summary.json"
 # Outputs
 PATH_PLOT_ASSET_PAIR_RISK = "../results/plots/asset-pair-risk.png"
 

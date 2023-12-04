@@ -8,7 +8,7 @@ import matplotlib.ticker as ticker
 import dateutil.parser as dp
 
 # Inputs
-PATH_RESULTS_SUMMARY = "../data/results/summary.json"
+PATH_RESULTS_SUMMARY = "../results/data/summary.json"
 # Outputs
 PATH_PLOT_TOP_PAIRS = "../results/plots/asset-top-pairs.png"
 
