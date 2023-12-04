@@ -35,8 +35,8 @@ def main():
 
     # plot
     n_pairs = 22
-    plot_first_n_pairs(loan_pairs_grouped, n_pairs, "Loans per Asset-Pair", PATH_PLOT_PAIRS)
-    plot_first_n_pairs(loan_pairs_without_liquidations_grouped, n_pairs, "Not Liquidated Loans per Asset-Pair",
+    plot_first_n_pairs(loan_pairs_grouped, n_pairs, "Loans per Asset Pair", PATH_PLOT_PAIRS)
+    plot_first_n_pairs(loan_pairs_without_liquidations_grouped, n_pairs, "Not Liquidated Loans per Asset Pair",
                        PATH_PLOT_PAIRS_WITHOUT_LIQUIDATIONS)
     plot_first_n_pairs(loan_pairs_with_liquidations_grouped, n_pairs, "Liquidated Loans per Asset Pair",
                        PATH_PLOT_PAIRS_WITH_LIQUIDATIONS)

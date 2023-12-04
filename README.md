@@ -108,12 +108,12 @@ Aave does not give us this information, thus we use a simple heuristic:
 If a user has a loan of asset x, we look at what assets y they have during that time as collateral.
 Additionally, we grouped all stablecoins that represent USD together (e.g. DAI, USDC).
 
-![loans-without-liquidations.](docs/loans-without-liquidations.png)
+![loans-without-liquidations.](docs/loans-per-asset-pair.png)
 Here we see the number of loans without liquidations for certain asset pairs.
 They seem to follow the power law, characterized by a few highly popular asset pairs and numerous less popular ones.
 Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
 
-![loans-with-liquidations](docs/loans-with-liquidations.png)
+![loans-with-liquidations](docs/share-of-liquidated-loans-per-asset-pair.png)
 Here we see the share of loans with liquidations. We also call this *asset pair risk*.
 Loans with ETH-USD which were the most popular overall, 
 also have one of the highest percentages of loans with liquidations, `~ 3.5%`,
