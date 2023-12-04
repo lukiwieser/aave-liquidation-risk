@@ -4,7 +4,7 @@
 # Datasets & Output Data
 data/parsed
 data/raw
-reports
+data/results
 
 # Python
 __pycache__

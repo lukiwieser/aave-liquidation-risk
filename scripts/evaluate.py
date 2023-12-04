@@ -5,6 +5,16 @@ from enum import Enum
 from collections import defaultdict 
 from pathlib import Path
 import datetime
+import os
+
+# Inputs
+PATH_TX_HISTORY_LENDING_POOL_V2 = "../data/parsed/tx-history_lending-pool-v2.csv"
+PATH_TX_HISTORY_WETH_GATEWAY = "../data/parsed/tx-history_weth-gateway.csv"
+# Outputs
+PATH_RESULTS_SUMMARY = "../data/results/summary.json"
+PATH_LIQUIDATION_TIMELINE = "../data/results/liquidation_timeline.csv"
+
+LENDING_POOL_V2_ADDRESS = "7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
 
 class Loan:
     def __init__(self, t1, t2, status, hasLiquidation):
@@ -96,10 +106,7 @@ class UserData:
         data["collateral_timeline"] = self.collateral_timeline
         return json.dumps(data)
 
-LENDING_POOL_V2_ADDRESS = "7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
-
 def main(args):
-    output_file = args.output
     results = dict()
 
     assetAddresses = {
@@ -158,8 +165,8 @@ def main(args):
         'RENFIL' : 'RENFIL' 
     }
 
-    tx_history = load_tx_history("../data/parsed/tx-history.csv")
-    tx_history_weth_gateway = load_tx_history("../data/parsed/tx-history-weth-gateway.csv") 
+    tx_history = load_tx_history(PATH_TX_HISTORY_LENDING_POOL_V2)
+    tx_history_weth_gateway = load_tx_history(PATH_TX_HISTORY_WETH_GATEWAY)
 
     tx_method_types = defaultdict(int)
     liqidation_addresses_debt = defaultdict(int)
@@ -493,11 +500,11 @@ def main(args):
     results["collateral_assets_open"] = sort_dict_by_value(collateral_assets_open, reverse=True)
     results["collateral_assets_closed"] = sort_dict_by_value(collateral_assets_closed, reverse=True)
 
-    
+    os.makedirs(os.path.dirname(PATH_LIQUIDATION_TIMELINE), exist_ok=True)
+    df_liquidation_timeline.to_csv(PATH_LIQUIDATION_TIMELINE, index = False, header=True)
 
-    save_dataframe(df_liquidation_timeline, "../reports", "liquidation_timeline.csv")
-
-    with open(output_file, 'w') as fp:
+    os.makedirs(os.path.dirname(PATH_RESULTS_SUMMARY), exist_ok=True)
+    with open(PATH_RESULTS_SUMMARY, 'w') as fp:
         json.dump(results, fp, indent=4)
 
     #with open('readme.txt', 'w') as f:
