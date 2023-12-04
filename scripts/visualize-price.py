@@ -4,14 +4,13 @@ import seaborn as sns
 import matplotlib.pylab as plt
 import matplotlib.ticker as ticker
 import dateutil.parser as dp
+import os
 
-def load_tx_history(file):
-    df = pd.read_csv(file, sep=",") 
-    return df
+PATH_PRICE_HISTORY = "../data/raw/price-history/ETH-USD.csv"
+PATH_PRICE_CHART = "../results/plots/price-chart.png"
 
-def main(args):
-    pricehistory_file = args.pricehistory
-    pricehistory = load_tx_history(pricehistory_file)
+def main():
+    pricehistory = pd.read_csv(PATH_PRICE_HISTORY, sep=",")
 
     data =[]
     for index, row in pricehistory.iterrows():
@@ -28,12 +27,8 @@ def main(args):
     ax.set_xticklabels([pd.to_datetime(tm, unit='s').strftime('%Y-%m-%d') for tm in xticks],rotation=50)
     ax.tick_params(labelsize=10)
 
-    ax.figure.savefig('../reports/price-chart.png', bbox_inches="tight")
+    os.makedirs(os.path.dirname(PATH_PRICE_CHART), exist_ok=True)
+    ax.figure.savefig(PATH_PRICE_CHART, bbox_inches="tight")
 
 if __name__ == '__main__':
-
-    parser = ArgumentParser()
-    parser.add_argument('-p', '--pricehistory',help='Input file path of price history (CSV)', type=str,required=True)
-    args = parser.parse_args()
-
-    main(args)
+    main()

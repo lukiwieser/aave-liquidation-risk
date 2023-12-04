@@ -1,9 +1,17 @@
+import os
+
 import pandas as pd
 import seaborn as sns
 import matplotlib.pylab as plt
 import matplotlib.ticker as ticker
 import dateutil.parser as dp
 
+# Inputs
+PATH_PRICE_HISTORY = "../data/raw/price-history/BTC-USD.csv"
+PATH_LIQUIDATION_TIMELINE = '../data/results/liquidation_timeline.csv'
+ASSET_PAIR = "BTC/USD"
+# Outputs
+PATH_PLOT_CORRELATION = '../results/plots/liquidation-price-correlation.png'
 
 # in:   2020-12-22T00:00:00
 # out:  2020-12-22
@@ -11,13 +19,13 @@ def simplify_date(date):
     year = date[:4]
     month = date[5:7]
     day = date[8:10]
-    return f"{year}-{month}-{day}"    
+    return f"{year}-{month}-{day}"
 
 
 def main():
-    df_prices_eth_usd = pd.read_csv("../data/raw/price-history/BTC-USD.csv") 
-    df_liquidation_timeline = pd.read_csv("../reports/liquidation_timeline.csv") 
-    pair = "BTC/USD"
+    df_prices_eth_usd = pd.read_csv(PATH_PRICE_HISTORY)
+    df_liquidation_timeline = pd.read_csv(PATH_LIQUIDATION_TIMELINE)
+    pair = ASSET_PAIR
 
     #days_to_consider = 1
     #factor = 0.2
@@ -65,7 +73,9 @@ def main():
     #ax.set(xscale="log")
     title = pair + " (collateral/debt)"
     ax.set(xlabel="liquidation count", ylabel = "collateral price volatility", title=title)
-    ax.savefig('../reports/price-corr.png', bbox_inches="tight")
+
+    os.makedirs(os.path.dirname(PATH_PLOT_CORRELATION), exist_ok=True)
+    ax.savefig(PATH_PLOT_CORRELATION, bbox_inches="tight")
 
 
 if __name__ == '__main__':

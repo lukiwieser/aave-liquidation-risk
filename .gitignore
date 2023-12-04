@@ -5,6 +5,7 @@
 data/parsed
 data/raw
 data/results
+results/plots
 
 # Python
 __pycache__

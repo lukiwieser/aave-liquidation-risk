@@ -3,14 +3,19 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pylab as plt
 import matplotlib.ticker as ticker
+import os
+
+# Inputs
+PATH_TX_HISTORY_LENDING_POOL_V2 = "../data/parsed/tx-history_lending-pool-v2.csv"
+# Outputs
+PATH_LIQUIDATION_CHART = "../results/plots/liquidation-chart.png"
 
 def load_tx_history(file):
     df = pd.read_csv(file, sep=";") 
     return df
 
-def main(args):
-    txhistory_file = args.txhistory
-    tx_history = load_tx_history(txhistory_file)
+def main():
+    tx_history = load_tx_history(PATH_TX_HISTORY_LENDING_POOL_V2)
 
     liquidations = []
     for index, row in tx_history.iterrows():
@@ -24,12 +29,8 @@ def main(args):
     ax.set_xticklabels([pd.to_datetime(tm, unit='s').strftime('%Y-%m-%d') for tm in xticks],rotation=50)
     ax.tick_params(labelsize=10)
 
-    ax.figure.savefig('../reports/liquidation-chart.png', bbox_inches="tight")
+    os.makedirs(os.path.dirname(PATH_LIQUIDATION_CHART), exist_ok=True)
+    ax.figure.savefig(PATH_LIQUIDATION_CHART, bbox_inches="tight")
 
 if __name__ == '__main__':
-
-    parser = ArgumentParser()
-    parser.add_argument('-t', '--txhistory',help='Input file path of parsed aave tx history (CSV)', type=str,required=True)
-    args = parser.parse_args()
-
-    main(args)
+    main()
