@@ -2,29 +2,33 @@ const InputDataDecoder = require('ethereum-input-data-decoder');
 const csv = require('csv-parser');
 const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const getDirName = require('path').dirname;
 
+const ABI = "../data/raw/abi_weth-gateway.json";
+const PATH_INPUT_DATA = "../data/raw/tx-history_weth-gateway.csv";
+const PATH_OUTPUT_DATA = "../data/parsed/tx-history_weth-gateway.csv";
 
-const decoder = new InputDataDecoder("../data/raw/abi-weth-gateway.json");
+const decoder = new InputDataDecoder(ABI);
+const data = [];
+let count = 0;
 
-const data = []
-count = 0;
-
-fs.createReadStream('../data/raw/tx-history-weth-gateway.csv')
+console.log("Parsing transactions from '" + PATH_INPUT_DATA + "' ...")
+fs.createReadStream(PATH_INPUT_DATA)
   .pipe(csv())
   .on('data', (row) => {
     newRow = {...row}
     const result = decoder.decodeData(row.input);
     row.input_decoded = JSON.stringify(result);
     data.push(row)
-    
+
     count++
-    if(count % 1000 === 0) console.log(count);
+    if(count % 10000 === 0) console.log(count);
   })
   .on('end', () => {
     console.log('CSV file successfully processed');
 
     const csvWriter = createCsvWriter({
-      path: '../data/parsed/tx-history-weth-gateway.csv',
+      path: PATH_OUTPUT_DATA,
       fieldDelimiter: ';',
       header: [
         {id: 'timestamp', title: 'timestamp'},
@@ -40,7 +44,11 @@ fs.createReadStream('../data/raw/tx-history-weth-gateway.csv')
       ]
     });
 
+    fs.mkdir(getDirName(PATH_OUTPUT_DATA), { recursive: true}, function (err) {
+        if (err) return cb(err);
+    });
+
     csvWriter.writeRecords(data).then(
-      ()=> console.log('The CSV file was written successfully')
+      ()=> console.log("CSV file successfully saved to '" + PATH_OUTPUT_DATA + "'")
     );
   });
