@@ -1,5 +1,7 @@
 import datetime
 
+import dateutil.parser as dp
+
 
 def strip_0x_from_address(address):
     if address[:2] == "0x":
@@ -30,3 +32,10 @@ def timestamp_to_simple_iso(timestamp, shouldStripTime):
     if shouldStripTime:
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)
     return date.isoformat()
+
+
+# input:    2020-12-01T00:00:00.0000000Z
+# output:   2020-12-01T00:00:00
+def simplify_iso_date(date):
+    new_date = dp.parse(date, ignoretz=True)
+    return new_date.isoformat()

@@ -1,26 +1,28 @@
-from urllib import parse
 import json
-import requests
-import pandas as pd
-import utils.globals as globals
+from urllib import parse
 
-BASE_URL = 'https://api.etherscan.io/api'
-ADDRESS = '0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04'
+import requests
+
+import utils.api_keys as api_keys
+
+ETHERSCAN_URL = 'https://api.etherscan.io/api'
+WETH_GATEWAY_ADDRESS = '0xcc9a0B7c43DC2a5F023Bb9b738E45B0Ef6B06E04'
+PATH_ABI_WETH_GATEWAY = "../data/raw/abi_weth-gateway.json"
+
 
 def main():
-
-    url = BASE_URL + '?' + parse.urlencode({
-        'module' : 'contract', 
-        'action' : 'getabi',
-        'address' : ADDRESS, 
-        'apikey' : globals.ETHERSCAN_API_KEY
+    url = ETHERSCAN_URL + '?' + parse.urlencode({
+        'module': 'contract',
+        'action': 'getabi',
+        'address': WETH_GATEWAY_ADDRESS,
+        'apikey': api_keys.ETHERSCAN_API_KEY
     })
     r = requests.get(url)
     d = json.loads(r.text)
 
     abi = json.loads(d["result"])
 
-    with open("../data/raw/abi_weth-gateway.json", 'w') as fp:
+    with open(PATH_ABI_WETH_GATEWAY, 'w') as fp:
         json.dump(abi, fp, indent=4)
 
 

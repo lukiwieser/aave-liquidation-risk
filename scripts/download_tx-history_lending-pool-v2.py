@@ -1,58 +1,53 @@
-from argparse import ArgumentParser
-from urllib import parse
 import json
-import requests
+import os
+from urllib import parse
+
 import pandas as pd
-import utils.globals as globals
+import requests
 
-BASE_URL = 'https://api.etherscan.io/api'
-ADDRESS = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
+import utils.api_keys as api_keys
 
-def get_address_actions():
+ETHERSCAN_URL = 'https://api.etherscan.io/api'
+LENDING_POOL_V2_ADDRESS = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
+# Outputs
+PATH_TX_HISTORY = "../data/raw/tx-history_lending-pool-v2.csv"
+
+
+def main():
     currentblock = 0
     counter = 0
     data = []
 
     while True:
-        url = BASE_URL + '?' + parse.urlencode({
-            'module' : 'account', 
-            'action' : 'txlist', 
-            'address' : ADDRESS, 
-            'sort' : 'asc', 
-            'startblock' : currentblock, 
-            'endblock' : 999999999, 
-            'apikey' : globals.ETHERSCAN_API_KEY
+        url = ETHERSCAN_URL + '?' + parse.urlencode({
+            'module': 'account',
+            'action': 'txlist',
+            'address': LENDING_POOL_V2_ADDRESS,
+            'sort': 'asc',
+            'startblock': currentblock,
+            'endblock': 999999999,
+            'apikey': api_keys.ETHERSCAN_API_KEY
         })
         r = requests.get(url)
         d = json.loads(r.text)
 
         for item in d['result']:
-            data.append([item['timeStamp'], item['blockNumber'], item['hash'], item['from'], item['to'], item['input'], item['isError'], item['txreceipt_status']])
+            data.append([item['timeStamp'], item['blockNumber'], item['hash'], item['from'], item['to'], item['input'],
+                         item['isError'], item['txreceipt_status']])
 
         counter = counter + 10000
         if len(data) < counter:
             break
-        currentblock = data[counter-1][1]
+        currentblock = data[counter - 1][1]
 
         print('Next Block ' + currentblock)
-        
-    df = pd.DataFrame(data, columns=['timestamp', 'blockNumber', 'hash', 'from', 'to', 'input', 'isError', 'txreceipt_status'])
-    return df
 
-def main(args):
+    df = pd.DataFrame(data, columns=['timestamp', 'blockNumber', 'hash', 'from', 'to', 'input', 'isError',
+                                     'txreceipt_status'])
 
-    output_file = args.output
+    os.makedirs(os.path.dirname(PATH_TX_HISTORY), exist_ok=True)
+    df.to_csv(PATH_TX_HISTORY, index=False, header=True)
 
-    df = get_address_actions()
 
-    df.to_csv(output_file, index = False, header = True)
-    
 if __name__ == '__main__':
-
-    parser = ArgumentParser()
-    parser.add_argument('-o', '--output',
-                        help='Output file path (JSON)',
-                        type=str, required=False)
-    args = parser.parse_args()
-
-    main(args)
+    main()
