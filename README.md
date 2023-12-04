@@ -99,7 +99,7 @@ The number of open and closed loans is similar, suggesting a relatively young pr
 The number of liquidated loans is still small. 
 The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidation risk.
 
-#### Loans per Asset Pair
+#### Asset Pairs of Loans
 
 Next, we try to determine if certain asset pairs are more prone to liquidations than others.
 An asset pair is composed of the cryptocurrencies as collateral and of the loan e.g. (ETH-USD).
@@ -175,33 +175,34 @@ To reproduce our results, follow these steps:
 
 3. **Run the Scripts:**
 
-   The code in the `/scripts` folder follows a pipeline with 4 phases:
+   The code in the `scripts` folder follows a pipeline with 4 phases:
    1. Download: Fetch necessary raw data.
    2. Parse: Speeds up processing by parsing some of the raw data.
    3. Evaluate: Analyzes data, generating project results (= heart of the project).
    4. Visualize: Creates plots based on result data.
    
    Simply run the scripts sequentially, starting with "download" scripts.
-   Use commands like `node ./scripts/parse-lendings.js`, or `python ./scripts/evaluate.py`. 
-   Some scripts might want you to specify the path to the input data.
+   Use commands like `node ./parse_tx-history_lending-pool-v2.js`, or `python ./evaluate.py`. 
+   If you already have downloaded or parsed the data, you can skip these steps and directly start evaluating.
 
 4. **View Outputs:**
 
    The results from the scripts will be saved in the following folders:
    - `data/raw`: Contains raw downloaded data.
    - `data/parsed`: Contains the parsed data.
-   - `reports`: Contains the final results.
+   - `results`: Contains the final results.
 
 
 ## Lessons Learned
 
 Here are some key takeaways from our project:
 
-- Heuristics help! (sometimes the data you have is not enough)
-- Decentralized finance is a complex field (involving intertwined smart contracts and lots of financial maths)
-- There is much to learn with Data Science (how to approach the problem, best practices for data exploration/understanding, 
-how to structure the code, validity of results, etc.)
-- *Note:* In hindsight, this might seem obvious, and using jupyter notebooks would have been a good idea, but keep in mind that this was our first data science project.
+- Heuristics help! (sometimes the data you have is not enough).
+- Decentralized finance is a complex field (involving intertwined smart contracts and lots of financial maths).
+- There is much to learn with Data Science (how to approach the problem, best practices for data exploration & understanding, 
+how to structure the code, validity of results, etc.).
+- *Note:* In hindsight, this might seem obvious, and for example using jupyter notebooks would have been a good idea. 
+  But keep in mind that this was our first data science project.
 
 
 ## Credits
