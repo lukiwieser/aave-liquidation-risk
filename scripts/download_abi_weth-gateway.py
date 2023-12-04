@@ -20,7 +20,7 @@ def main():
 
     abi = json.loads(d["result"])
 
-    with open("../data/raw/abi-weth-gateway.json", 'w') as fp:
+    with open("../data/raw/abi_weth-gateway.json", 'w') as fp:
         json.dump(abi, fp, indent=4)
 
 

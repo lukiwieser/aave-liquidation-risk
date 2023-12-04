@@ -4,9 +4,9 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const getDirName = require('path').dirname;
 
-const ABI = "../data/raw/abi.json";
-const PATH_INPUT_DATA = "../data/raw/tx-history-short.csv";
-const PATH_OUTPUT_DATA = "../data/parsed/tx-history-short.csv";
+const ABI = "../data/raw/abi_lending-pool-v2.json";
+const PATH_INPUT_DATA = "../data/raw/tx-history_lending-pool-v2.csv";
+const PATH_OUTPUT_DATA = "../data/parsed/tx-history_lending-pool-v2.csv";
 
 const decoder = new InputDataDecoder(ABI);
 const data = [];
