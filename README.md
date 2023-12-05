@@ -151,16 +151,18 @@ To reproduce our results, follow these steps:
 
 1. **Install Dependencies**:
 
-   Ensure that [Node](https://nodejs.org/en/) and [Python 3.8+](https://www.python.org/downloads/) are installed on your machine.
+   Ensure that [Python 3.8+](https://www.python.org/downloads/) and [Node](https://nodejs.org/en/) are installed on your machine.
 
-   Install JavaScript dependencies with:
-   ```bash
-   npm install
-   ```
    Install Python dependencies with:
    ```bash
    pip install -r requirements.txt
    ```
+   
+   Install JavaScript dependencies with:
+   ```bash
+   npm install
+   ```
+   
    *Note:* We additionally use Node, since it is easier to handle ABI related things with the libraries available in the node ecosystem.
 
 2. **Set API Keys:**
@@ -173,9 +175,12 @@ To reproduce our results, follow these steps:
    Next, create a `.env` file at the project's root.
    The content of the file should look like `.env.sample` but with your API keys instead of the `xxxx`.
 
+    *Note:* The Defipulse API seems to be discontinued as of writing this (December 5, 2023).
+    However, since the majority of the project does not need this data anyway, you can simply ignore the scripts `visualize-tvl.py` and `download_tvl-history.py`.
+
 3. **Run the Scripts:**
 
-   The code in the `scripts` folder follows a pipeline with 4 phases:
+   The code in the folder `scripts` follows a pipeline with 4 phases:
    1. Download: Fetch necessary raw data.
    2. Parse: Speeds up processing by parsing some of the raw data.
    3. Evaluate: Analyzes data, generating project results (= heart of the project).
@@ -185,10 +190,13 @@ To reproduce our results, follow these steps:
    Use commands like `node ./parse_tx-history_lending-pool-v2.js` or `python ./evaluate.py`. 
    If you already have downloaded or parsed the data, you can skip these steps and directly start evaluating.
 
+4. **View Outputs:**
+
    The results from the scripts will be saved in the following folders:
    - `data/raw`: Contains raw downloaded data.
    - `data/parsed`: Contains the parsed data.
    - `results`: Contains the final results.
+
 
 
 ## Lessons Learned
