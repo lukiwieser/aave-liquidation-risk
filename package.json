@@ -1,21 +1,6 @@
 {
-  "name": "aave-liquidation-analysis",
+  "name": "aave-liquidation-risk",
   "version": "1.0.0",
-  "description": "This project aims to analyze risks associated with borrowing assets on the AAVE V2 protocol.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lukiwieser/aave-liquidation-analysis.git"
-  },
-  "author": "Sebastian Fürndraht & Lukas Wieser",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/lukiwieser/aave-liquidation-analysis/issues"
-  },
-  "homepage": "https://github.com/lukiwieser/aave-liquidation-analysis#readme",
   "dependencies": {
     "@aave/protocol-v2": "^1.0.1",
     "@ethersproject/abi": "^5.4.0",
