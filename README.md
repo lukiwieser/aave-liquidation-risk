@@ -13,16 +13,16 @@ or borrow different cryptocurrencies.
 The Aave V2 protocol consists of multiple smart contracts built on the Ethereum blockchain.
 Users only interact with the *Lending Pool V2* smart contract:
 * Depositing:
-  * Users can `deposit` a cryptocurrency and earn interest. 
+  * Users can `deposit` cryptocurrencies and earn interest. 
   * Users can `withdraw` their deposited cryptocurrencies at any time.
 * Borrowing:
   * Users can also `borrow` cryptocurrencies, but have to pay interest.
   * Before borrowing, they must deposit a certain amount as collateral.
-    The exact amount depends on the cryptocurrency.
+    The exact amount depends on the cryptocurrencies.
     This ensures that users pay back and do not act maliciously.
   * Users can `repay` part of the borrowed assets any time.
 * Liquidations:
-  * Due to price changes of the deposited and borrowed cryptocurrencies, it might happen that they do not have enough collateral deposited.
+  * Due to price changes of the deposited and borrowed cryptocurrencies, it might happen that a user does not have enough collateral deposited.
   * If that is the case, other users can trigger a `liquidation call` and purchase up to 50% of the collateral at a discounted price.
   * This mechanism ensures that Aave does not lose money.
 
@@ -79,7 +79,7 @@ To get more information about borrows & repays, we have to look at individual lo
 
 Next, let's look at individual loans.
 
-We can estimate the loans by sequentially adding up the borrowed and subtracting the repaid amount.
+We can estimate the loans by sequentially adding up the borrowed amounts, and subtracting the repaid amounts.
 If the amount reaches zero, we know the loan is fully repaid aka *closed*.
 Else the loan is still *open*.
 If at any time a liquidation occurs, we consider the loan as *liquidated*, and not open or closed.
@@ -102,7 +102,7 @@ The share of liquidated loans is `0.63%`, allowing a basic estimate for liquidat
 #### Asset Pairs of Loans
 
 Next, we try to determine if certain asset pairs are more prone to liquidations than others.
-An asset pair is composed of the cryptocurrencies as collateral and of the loan e.g. (ETH-USD).
+An asset pair (e.g. ETH-USD) consists of the collateral cryptocurrency (e.g. ETH) and the borrowed cryptocurrency (e.g. USD),
 
 Aave does not give us this information, thus we use a simple heuristic: 
 If a user has a loan of asset x, we look at what assets y they have during that time as collateral.
@@ -115,7 +115,7 @@ Most loans are in ETH-USD (collateral-debt). The 4th most popular is USD-USD.
 
 ![loans-with-liquidations](docs/share-of-liquidated-loans-per-asset-pair.png)
 Here we see the share of loans with liquidations. We also call this *asset pair risk*.
-Loans with ETH-USD which were the most popular overall, 
+Loans with ETH-USD, which were the most popular overall, 
 also have one of the highest percentages of loans with liquidations, `~ 3.5%`,
 which is about 1 in 28 loans.
 While loans with USD-USD, which are also very popular, have a quite low share of being liquidated.
@@ -124,7 +124,7 @@ A possible reason for this trend could be that asset pairs with lower liquidatio
 #### Correlation of liquidations and asset price
 
 Next, let's look if liquidations correlate when the price of a cryptocurrency changes.
-Due to time constraints, we just look at the price of ETH.
+Due to time constraints, we only look at the price of ETH.
 
 ![correlation-liquidations-and-price](docs/correlation-liquidations-and-price.png)
 
@@ -151,13 +151,13 @@ To reproduce our results, follow these steps:
 
 1. **Install Dependencies**:
 
-   Ensure that [Node](https://nodejs.org/en/) and [Python 3](https://www.python.org/downloads/) are installed on your machine.
+   Ensure that [Node](https://nodejs.org/en/) and [Python 3.8+](https://www.python.org/downloads/) are installed on your machine.
 
-   Install the JavaScript dependencies with:
+   Install JavaScript dependencies with:
    ```bash
    npm install
    ```
-   Install the Python dependencies with:
+   Install Python dependencies with:
    ```bash
    pip install -r requirements.txt
    ```
@@ -182,10 +182,8 @@ To reproduce our results, follow these steps:
    4. Visualize: Creates plots based on result data.
    
    Simply run the scripts sequentially, starting with "download" scripts.
-   Use commands like `node ./parse_tx-history_lending-pool-v2.js`, or `python ./evaluate.py`. 
+   Use commands like `node ./parse_tx-history_lending-pool-v2.js` or `python ./evaluate.py`. 
    If you already have downloaded or parsed the data, you can skip these steps and directly start evaluating.
-
-4. **View Outputs:**
 
    The results from the scripts will be saved in the following folders:
    - `data/raw`: Contains raw downloaded data.
